@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('programmes', function (Blueprint $table) {
             $table->id();
             $table->string('nom', 200);
-            $table->enum('niveau', ['licence', 'master']);
+            $table->enum('niveau', ['classe_preparatoire', 'licence', 'master']);
             $table->unsignedInteger('capacite_accueil')->nullable();
             $table->date('date_ouverture');
             $table->date('date_fermeture');

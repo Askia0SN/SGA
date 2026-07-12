@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ReferentielRolesSeeder::class,
             TypesDocumentsSeeder::class,
+            ProgrammesSeeder::class,
             ModelesEmailsSeeder::class,
         ]);
     }
