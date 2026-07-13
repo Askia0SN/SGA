@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <p class="text-xs font-extrabold uppercase text-[#d91426]">Securite</p>
+        <h1 class="mt-1 text-2xl font-extrabold text-[#191339]">Nouveau mot de passe</h1>
+    </div>
+
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 
@@ -14,14 +19,14 @@
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" value="Mot de passe" />
             <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <x-input-label for="password_confirmation" value="Confirmation du mot de passe" />
 
             <x-text-input id="password_confirmation" class="block mt-1 w-full"
                                 type="password"
@@ -32,7 +37,7 @@
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button>
-                {{ __('Reset Password') }}
+                Enregistrer
             </x-primary-button>
         </div>
     </form>
