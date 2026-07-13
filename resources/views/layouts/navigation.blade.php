@@ -8,7 +8,7 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                         <x-application-logo class="block h-12 w-12 rounded-md" />
                         <div class="hidden sm:block">
-                            <p class="text-sm font-extrabold uppercase text-[#27185f]">SGA EPF</p>
+                            <p class="text-sm font-extrabold uppercase text-[#27185f]">EPF Africa</p>
                             <p class="text-xs font-semibold text-[#d91426]">Admissions</p>
                         </div>
                     </a>
