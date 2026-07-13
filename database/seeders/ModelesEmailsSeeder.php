@@ -21,6 +21,11 @@ class ModelesEmailsSeeder extends Seeder
                 'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme {programme} a bien ete recue. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
             ],
             [
+                'evenement' => 'candidature_brouillon',
+                'objet' => 'Brouillon enregistré - EPF Africa',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon de candidature au programme {programme} a bien ete enregistre. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+            ],
+            [
                 'evenement' => 'complement_demande',
                 'objet' => 'Complement de dossier requis - EPF Africa',
                 'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Un complement est necessaire pour poursuivre le traitement de votre dossier : {message}.</p>',
