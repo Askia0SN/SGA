@@ -17,21 +17,30 @@
             <div class="text-center">
                 <p class="text-sm font-extrabold uppercase text-[#d91426]">Suivi candidat</p>
                 <h1 class="mt-3 text-3xl font-extrabold text-[#191339] sm:text-4xl">Ou en est ma candidature ?</h1>
-                <p class="mt-4 text-base leading-7 text-[#6d6684]">Saisissez le code de suivi recu par email apres le depot de votre dossier.</p>
+                <p class="mt-4 text-base leading-7 text-[#6d6684]">Saisissez le code de suivi et l'adresse email utilises lors du depot de votre dossier.</p>
             </div>
 
             <form method="POST" action="{{ route('candidatures.suivi.rechercher') }}" class="mx-auto mt-8 max-w-xl rounded-lg border border-[#e8e2f5] bg-[#f7f5fb] p-6">
                 @csrf
-                <label for="code_suivi" class="block text-sm font-bold text-[#27185f]">Code de suivi</label>
-                <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                    <input id="code_suivi" name="code_suivi" type="text" value="{{ old('code_suivi', $codeSuivi ?? '') }}" maxlength="20" required autofocus autocomplete="off" placeholder="Ex. SGA-2026-ABC123" class="block w-full rounded-md border-[#d8d0ea] uppercase shadow-sm focus:border-[#d91426] focus:ring-[#d91426]">
-                    <button type="submit" class="inline-flex shrink-0 items-center justify-center rounded-md bg-[#d91426] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#b70f1e]">
-                        Rechercher
-                    </button>
+                <div>
+                    <label for="email" class="block text-sm font-bold text-[#27185f]">Adresse email</label>
+                    <input id="email" name="email" type="email" value="{{ old('email', $email ?? '') }}" required autocomplete="email" placeholder="nom@exemple.com" class="mt-2 block w-full rounded-md border-[#d8d0ea] shadow-sm focus:border-[#d91426] focus:ring-[#d91426]">
+                    @error('email')
+                        <p class="mt-2 text-sm font-semibold text-[#b70f1e]">{{ $message }}</p>
+                    @enderror
                 </div>
-                @error('code_suivi')
-                    <p class="mt-2 text-sm font-semibold text-[#b70f1e]">{{ $message }}</p>
-                @enderror
+
+                <div class="mt-4">
+                    <label for="code_suivi" class="block text-sm font-bold text-[#27185f]">Code de suivi</label>
+                    <input id="code_suivi" name="code_suivi" type="text" value="{{ old('code_suivi', $codeSuivi ?? '') }}" maxlength="20" required autofocus autocomplete="off" placeholder="Ex. SGA-2026-ABC123" class="block w-full rounded-md border-[#d8d0ea] uppercase shadow-sm focus:border-[#d91426] focus:ring-[#d91426]">
+                    @error('code_suivi')
+                        <p class="mt-2 text-sm font-semibold text-[#b70f1e]">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit" class="mt-5 inline-flex w-full items-center justify-center rounded-md bg-[#d91426] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#b70f1e]">
+                    Rechercher ma candidature
+                </button>
             </form>
 
             @isset($codeSuivi)
@@ -59,7 +68,7 @@
                 @else
                     <div class="mx-auto mt-6 max-w-xl rounded-lg border border-[#f0c8ce] bg-[#fff4f5] p-5 text-center">
                         <p class="font-bold text-[#b70f1e]">Aucune candidature ne correspond a ce code.</p>
-                        <p class="mt-2 text-sm text-[#6d6684]">Verifiez le code figurant dans votre email de confirmation.</p>
+                        <p class="mt-2 text-sm text-[#6d6684]">Verifiez le code et l'adresse email figurant dans votre confirmation.</p>
                     </div>
                 @endif
             @endisset

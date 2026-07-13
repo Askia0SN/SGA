@@ -17,22 +17,12 @@
                     </a>
                 </div>
             @else
-                <div class="mx-auto mt-10 grid max-w-3xl gap-px overflow-hidden rounded-lg border border-[#e8e2f5] bg-[#e8e2f5] sm:grid-cols-2">
-                    <section class="bg-white p-7">
-                        <h2 class="text-xl font-extrabold text-[#27185f]">J'ai deja un compte</h2>
-                        <p class="mt-3 min-h-12 text-sm leading-6 text-[#6d6684]">Retrouvez votre espace de travail avec votre adresse email professionnelle.</p>
-                        <a href="{{ route('login') }}" class="mt-6 inline-flex w-full items-center justify-center rounded-md bg-[#27185f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#3a2386]">
-                            Se connecter
-                        </a>
-                    </section>
-
-                    <section class="bg-white p-7">
-                        <h2 class="text-xl font-extrabold text-[#27185f]">Je cree mon acces</h2>
-                        <p class="mt-3 min-h-12 text-sm leading-6 text-[#6d6684]">Creez votre compte. Le super administrateur pourra ensuite vous attribuer le role adapte.</p>
-                        <a href="{{ route('register') }}" class="mt-6 inline-flex w-full items-center justify-center rounded-md bg-[#d91426] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#b70f1e]">
-                            S'inscrire
-                        </a>
-                    </section>
+                <div class="mx-auto mt-10 max-w-lg rounded-lg border border-[#e8e2f5] bg-white p-7 shadow-sm">
+                    <h2 class="text-xl font-extrabold text-[#27185f]">Connexion professionnelle</h2>
+                    <p class="mt-3 text-sm leading-6 text-[#6d6684]">Les comptes sont crees exclusivement par le super administrateur. Utilisez l'adresse email sur laquelle vous avez recu votre invitation.</p>
+                    <a href="{{ route('login') }}" class="mt-6 inline-flex w-full items-center justify-center rounded-md bg-[#27185f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#3a2386]">
+                        Se connecter
+                    </a>
                 </div>
             @endauth
 
