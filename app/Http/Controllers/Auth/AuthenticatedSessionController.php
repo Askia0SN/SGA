@@ -28,6 +28,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $request->user()->forceFill([
+            'derniere_connexion_le' => now(),
+        ])->save();
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -42,6 +46,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('admission.accueil');
     }
 }
