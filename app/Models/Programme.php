@@ -33,6 +33,25 @@ class Programme extends Model
             ->orderByPivot('ordre');
     }
 
+    public function estOuvertAuxCandidatures(): bool
+    {
+        $aujourdhui = now()->startOfDay();
+
+        return $this->actif
+            && $this->date_ouverture->lte($aujourdhui)
+            && $this->date_fermeture->gte($aujourdhui);
+    }
+
+    public function libelleNiveau(): string
+    {
+        return match ($this->niveau) {
+            'classe_preparatoire' => 'Classe préparatoire',
+            'licence' => 'Licence',
+            'master' => 'Master',
+            default => ucfirst($this->niveau),
+        };
+    }
+
     protected function casts(): array
     {
         return [

@@ -1,10 +1,24 @@
 <x-public-layout title="Programmes - SGA EPF">
     <section class="bg-white">
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <div class="max-w-3xl">
-                <p class="text-sm font-extrabold uppercase text-[#d91426]">Formations EPF Africa</p>
-                <h1 class="mt-3 text-3xl font-extrabold text-[#191339] sm:text-4xl">Choisissez votre programme</h1>
-                <p class="mt-4 text-base leading-7 text-[#6d6684]">Explorez les programmes actuellement proposes et preparez votre projet de candidature.</p>
+            <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-extrabold uppercase text-[#d91426]">Formations EPF Africa</p>
+                    <h1 class="mt-3 text-3xl font-extrabold text-[#191339] sm:text-4xl">Choisissez votre programme</h1>
+                    <p class="mt-4 text-base leading-7 text-[#6d6684]">Explorez les programmes actuellement proposes et preparez votre projet de candidature.</p>
+                </div>
+
+                <div class="flex flex-col gap-4 sm:flex-row">
+                    <a href="{{ route('accueil') }}" class="inline-flex items-center justify-center rounded-full border border-[#b8b0da] bg-white px-7 py-4 text-base font-semibold text-[#27185f] shadow-sm transition hover:border-[#6f22de] hover:bg-[#f7f5fb] focus:outline-none focus:ring-2 focus:ring-[#6f22de] focus:ring-offset-2">
+                        Accueil
+                    </a>
+                    <a href="{{ route('programmes.index') }}" class="inline-flex items-center justify-center rounded-full bg-[#d91426] px-7 py-4 text-base font-semibold text-white shadow-lg shadow-[#d91426]/20 transition hover:bg-[#b70f1e] focus:outline-none focus:ring-2 focus:ring-[#d91426] focus:ring-offset-2">
+                        Programmes
+                    </a>
+                    <a href="{{ route('candidatures.suivi') }}" class="inline-flex items-center justify-center rounded-full border border-[#b8b0da] bg-white px-7 py-4 text-base font-semibold text-[#27185f] shadow-sm transition hover:border-[#6f22de] hover:bg-[#f7f5fb] focus:outline-none focus:ring-2 focus:ring-[#6f22de] focus:ring-offset-2">
+                        Suivre ma candidature
+                    </a>
+                </div>
             </div>
 
             @if ($programmes->isEmpty())
