@@ -19,6 +19,11 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Tableau de bord
                     </x-nav-link>
+                    @if (Auth::user()->hasRole('super_admin'))
+                        <x-nav-link :href="route('utilisateurs.index')" :active="request()->routeIs('utilisateurs.*')">
+                            Utilisateurs
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -74,6 +79,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Tableau de bord
             </x-responsive-nav-link>
+            @if (Auth::user()->hasRole('super_admin'))
+                <x-responsive-nav-link :href="route('utilisateurs.index')" :active="request()->routeIs('utilisateurs.*')">
+                    Utilisateurs
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

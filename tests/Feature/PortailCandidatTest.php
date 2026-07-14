@@ -21,12 +21,12 @@ class PortailCandidatTest extends TestCase
             ->assertSee(route('admission.accueil'));
     }
 
-    public function test_page_admission_propose_connexion_et_inscription(): void
+    public function test_page_admission_propose_uniquement_la_connexion(): void
     {
         $this->get(route('admission.accueil'))
             ->assertOk()
             ->assertSee(route('login'))
-            ->assertSee(route('register'));
+            ->assertDontSee('S inscrire');
     }
 
     public function test_liste_des_programmes_affiche_uniquement_les_programmes_actifs(): void
@@ -59,11 +59,36 @@ class PortailCandidatTest extends TestCase
 
         $this->post(route('candidatures.suivi.rechercher'), [
             'code_suivi' => 'sga-2026-abc123',
+            'email' => 'awa@example.com',
         ])
             ->assertOk()
             ->assertSee('Transmise au jury')
-            ->assertSee('Master Informatique')
-            ->assertDontSee('awa@example.com');
+            ->assertSee('Master Informatique');
+    }
+
+    public function test_un_email_incorrect_ne_permet_pas_de_consulter_la_candidature(): void
+    {
+        $programme = Programme::create($this->donneesProgramme('Master Energie', true));
+        $candidat = Candidat::create([
+            'prenom' => 'Awa',
+            'nom' => 'Ndiaye',
+            'email' => 'awa@example.com',
+        ]);
+
+        Candidature::create([
+            'candidat_id' => $candidat->id,
+            'programme_id' => $programme->id,
+            'code_suivi' => 'SGA-2026-SECRET',
+            'statut' => 'soumise',
+        ]);
+
+        $this->post(route('candidatures.suivi.rechercher'), [
+            'code_suivi' => 'SGA-2026-SECRET',
+            'email' => 'autre@example.com',
+        ])
+            ->assertOk()
+            ->assertSee('Aucune candidature ne correspond')
+            ->assertDontSee('Master Energie');
     }
 
     private function donneesProgramme(string $nom, bool $actif): array

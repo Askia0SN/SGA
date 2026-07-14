@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,10 +13,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, MustVerifyEmail, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +28,7 @@ class User extends Authenticatable
         'prenom',
         'nom',
         'email',
+        'email_verified_at',
         'telephone',
         'password',
         'actif',
@@ -37,6 +39,19 @@ class User extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'utilisateur_role');
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('nom', $role)->exists();
+    }
+
+    /**
+     * @param  array<int, string>  $roles
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('nom', $roles)->exists();
     }
 
     public function candidaturesTransmises(): HasMany
