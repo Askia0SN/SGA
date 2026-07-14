@@ -12,6 +12,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CandidatureSubmissionService
 {
@@ -25,9 +27,9 @@ class CandidatureSubmissionService
      */
     public function sauvegarderBrouillon(Programme $programme, array $donnees, ?int $candidatureId = null): Candidature
     {
-        return DB::transaction(function () use ($programme, $donnees, $candidatureId) {
-            $candidat = $this->trouverOuCreerCandidat($donnees);
-            $candidature = $this->trouverOuCreerCandidature($programme, $candidat, $candidatureId);
+        $nouveauBrouillon = $candidatureId === null;
+        $candidature = DB::transaction(function () use ($programme, $donnees, $candidatureId) {
+            $candidature = $this->trouverOuCreerCandidature($programme, $donnees, $candidatureId);
 
             $candidature->update([
                 'code_suivi' => $candidature->code_suivi ?? $this->codeSuiviGenerator->generer(),
@@ -37,6 +39,10 @@ class CandidatureSubmissionService
                 'statut' => StatutCandidature::Brouillon,
             ]);
 
+            return $candidature->fresh(['candidat', 'programme']);
+        });
+
+        if ($nouveauBrouillon) {
             try {
                 $this->emailService->envoyerCandidatureBrouillon($candidature);
             } catch (\Throwable $exception) {
@@ -47,9 +53,9 @@ class CandidatureSubmissionService
                     'exception' => $exception->getMessage(),
                 ]);
             }
+        }
 
-            return $candidature->fresh(['candidat', 'programme']);
-        });
+        return $candidature;
     }
 
     /**
@@ -58,9 +64,8 @@ class CandidatureSubmissionService
      */
     public function soumettre(Programme $programme, array $donnees, array $fichiers, ?int $candidatureId = null): Candidature
     {
-        return DB::transaction(function () use ($programme, $donnees, $fichiers, $candidatureId) {
-            $candidat = $this->trouverOuCreerCandidat($donnees);
-            $candidature = $this->trouverOuCreerCandidature($programme, $candidat, $candidatureId);
+        $candidature = DB::transaction(function () use ($programme, $donnees, $fichiers, $candidatureId) {
+            $candidature = $this->trouverOuCreerCandidature($programme, $donnees, $candidatureId);
 
             $ancienStatut = $candidature->statut;
 
@@ -76,56 +81,53 @@ class CandidatureSubmissionService
             $this->enregistrerDocuments($candidature, $fichiers);
             $this->enregistrerHistorique($candidature, $ancienStatut, StatutCandidature::Soumise, 'Candidature soumise par le candidat');
 
-            $candidature = $candidature->fresh(['candidat', 'programme', 'documents']);
-
-            try {
-                $this->emailService->envoyerCandidatureSoumise($candidature);
-            } catch (\Throwable $exception) {
-                report($exception);
-                Log::error('Echec envoi email soumission', [
-                    'candidature_id' => $candidature->id,
-                    'email' => $candidature->candidat->email,
-                    'exception' => $exception->getMessage(),
-                ]);
-            }
-
-            return $candidature;
+            return $candidature->fresh(['candidat', 'programme', 'documents']);
         });
+
+        try {
+            $this->emailService->envoyerCandidatureSoumise($candidature);
+        } catch (\Throwable $exception) {
+            report($exception);
+            Log::error('Echec envoi email soumission', [
+                'candidature_id' => $candidature->id,
+                'email' => $candidature->candidat->email,
+                'exception' => $exception->getMessage(),
+            ]);
+        }
+
+        return $candidature;
     }
 
     /**
      * @param  array<string, mixed>  $donnees
      */
-    private function trouverOuCreerCandidat(array $donnees): Candidat
+    private function trouverOuCreerCandidature(Programme $programme, array $donnees, ?int $candidatureId): Candidature
     {
-        return Candidat::query()->updateOrCreate(
-            ['email' => $donnees['email']],
-            [
-                'prenom' => $donnees['prenom'],
-                'nom' => $donnees['nom'],
-                'date_naissance' => $donnees['date_naissance'],
-                'telephone' => $donnees['telephone'] ?? null,
-                'pays' => $donnees['pays'] ?? null,
-                'adresse' => $donnees['adresse'] ?? null,
-            ],
-        );
-    }
+        $email = Str::lower(trim($donnees['email']));
 
-    private function trouverOuCreerCandidature(Programme $programme, Candidat $candidat, ?int $candidatureId): Candidature
-    {
         if ($candidatureId) {
             $candidature = Candidature::query()
+                ->with('candidat')
                 ->where('id', $candidatureId)
-                ->where('candidat_id', $candidat->id)
                 ->where('programme_id', $programme->id)
+                ->where('statut', StatutCandidature::Brouillon->value)
                 ->firstOrFail();
 
-            if (! in_array($candidature->statut, [StatutCandidature::Brouillon, StatutCandidature::Soumise], true)) {
-                abort(403, 'Cette candidature ne peut plus être modifiée.');
+            if (Str::lower($candidature->candidat->email) !== $email) {
+                throw ValidationException::withMessages([
+                    'email' => 'L’adresse email d’un brouillon enregistré ne peut pas être modifiée.',
+                ]);
             }
+
+            $candidature->candidat->update($this->donneesCandidat($donnees));
 
             return $candidature;
         }
+
+        $candidat = Candidat::query()->firstOrCreate(
+            ['email' => $email],
+            $this->donneesCandidat($donnees),
+        );
 
         $existante = Candidature::query()
             ->where('candidat_id', $candidat->id)
@@ -133,11 +135,9 @@ class CandidatureSubmissionService
             ->first();
 
         if ($existante) {
-            if ($existante->statut !== StatutCandidature::Brouillon) {
-                abort(403, 'Vous avez déjà soumis une candidature pour ce programme.');
-            }
-
-            return $existante;
+            throw ValidationException::withMessages([
+                'email' => 'Une candidature existe déjà pour cette adresse email et ce programme.',
+            ]);
         }
 
         $candidature = new Candidature([
@@ -150,6 +150,22 @@ class CandidatureSubmissionService
         $candidature->save();
 
         return $candidature;
+    }
+
+    /**
+     * @param  array<string, mixed>  $donnees
+     * @return array<string, mixed>
+     */
+    private function donneesCandidat(array $donnees): array
+    {
+        return [
+            'prenom' => $donnees['prenom'],
+            'nom' => $donnees['nom'],
+            'date_naissance' => $donnees['date_naissance'],
+            'telephone' => $donnees['telephone'] ?? null,
+            'pays' => $donnees['pays'] ?? null,
+            'adresse' => $donnees['adresse'] ?? null,
+        ];
     }
 
     /**

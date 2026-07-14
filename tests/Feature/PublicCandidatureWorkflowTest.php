@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\StatutCandidature;
 use App\Livewire\Public\FormulaireCandidature;
+use App\Mail\CandidatureSoumiseMail;
 use App\Models\Candidat;
 use App\Models\Candidature;
 use App\Models\Programme;
@@ -11,8 +12,12 @@ use App\Models\TypeDocument;
 use App\Services\CandidatureSubmissionService;
 use App\Services\CodeSuiviGenerator;
 use App\Services\EmailService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -208,5 +213,146 @@ class PublicCandidatureWorkflowTest extends TestCase
 
         $this->assertSame(StatutCandidature::Brouillon, $candidature->statut);
         $this->assertNotNull($candidature->code_suivi);
+    }
+
+    public function test_same_email_can_apply_to_two_different_programmes_without_overwriting_candidate(): void
+    {
+        Mail::fake();
+
+        $premierProgramme = Programme::create($this->donneesProgramme('Master Informatique'));
+        $secondProgramme = Programme::create($this->donneesProgramme('Master Energie'));
+        $service = app(CandidatureSubmissionService::class);
+
+        $premiere = $service->soumettre(
+            $premierProgramme,
+            $this->donneesCandidat('Awa', 'Ndiaye'),
+            [],
+        );
+        $seconde = $service->soumettre(
+            $secondProgramme,
+            $this->donneesCandidat('Prenom modifie', 'Nom modifie'),
+            [],
+        );
+
+        $this->assertSame($premiere->candidat_id, $seconde->candidat_id);
+        $this->assertDatabaseCount('candidats', 1);
+        $this->assertDatabaseCount('candidatures', 2);
+        $this->assertDatabaseHas('candidats', [
+            'id' => $premiere->candidat_id,
+            'prenom' => 'Awa',
+            'nom' => 'Ndiaye',
+        ]);
+    }
+
+    public function test_existing_application_for_same_programme_is_rejected(): void
+    {
+        Mail::fake();
+
+        $programme = Programme::create($this->donneesProgramme('Master Informatique'));
+        $service = app(CandidatureSubmissionService::class);
+        $service->soumettre($programme, $this->donneesCandidat(), []);
+
+        $this->expectException(ValidationException::class);
+
+        $service->soumettre($programme, $this->donneesCandidat(), []);
+    }
+
+    public function test_submitted_application_cannot_be_reopened_as_draft(): void
+    {
+        Mail::fake();
+
+        $programme = Programme::create($this->donneesProgramme('Master Informatique'));
+        $service = app(CandidatureSubmissionService::class);
+        $candidature = $service->soumettre($programme, $this->donneesCandidat(), []);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $service->sauvegarderBrouillon(
+            $programme,
+            $this->donneesCandidat(),
+            $candidature->id,
+        );
+    }
+
+    public function test_livewire_candidate_id_is_locked(): void
+    {
+        $programme = Programme::create($this->donneesProgramme('Master Informatique'));
+
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
+        Livewire::test(FormulaireCandidature::class, ['programme' => $programme])
+            ->set('candidatureId', 123);
+    }
+
+    public function test_tracking_code_is_long_and_test_mail_route_is_not_exposed(): void
+    {
+        $code = app(CodeSuiviGenerator::class)->generer();
+
+        $this->assertMatchesRegularExpression('/^EPF-[A-Z0-9]{12}$/', $code);
+        $this->get('/send-mail')->assertNotFound();
+    }
+
+    public function test_draft_email_is_only_sent_when_draft_is_created(): void
+    {
+        Mail::fake();
+
+        $programme = Programme::create($this->donneesProgramme('Master Informatique'));
+        $service = app(CandidatureSubmissionService::class);
+        $candidature = $service->sauvegarderBrouillon($programme, $this->donneesCandidat(), null);
+        $service->sauvegarderBrouillon($programme, $this->donneesCandidat(), $candidature->id);
+
+        Mail::assertSent(CandidatureSoumiseMail::class, 1);
+    }
+
+    public function test_submission_error_does_not_expose_technical_details(): void
+    {
+        $programme = Programme::create($this->donneesProgramme('Master Informatique'));
+        $service = \Mockery::mock(CandidatureSubmissionService::class);
+        $service->shouldReceive('soumettre')
+            ->once()
+            ->andThrow(new \RuntimeException('SQLSTATE information sensible'));
+        $this->app->instance(CandidatureSubmissionService::class, $service);
+
+        $component = Livewire::test(FormulaireCandidature::class, ['programme' => $programme]);
+        foreach ($this->donneesCandidat() as $champ => $valeur) {
+            if (property_exists($component->instance(), $champ)) {
+                $component->set($champ, $valeur);
+            }
+        }
+
+        $component->call('soumettre')
+            ->assertHasErrors('workflow')
+            ->assertSee('Veuillez réessayer')
+            ->assertDontSee('SQLSTATE information sensible');
+    }
+
+    /** @return array<string, mixed> */
+    private function donneesProgramme(string $nom): array
+    {
+        return [
+            'nom' => $nom,
+            'niveau' => 'master',
+            'capacite_accueil' => 30,
+            'date_ouverture' => now()->subDay(),
+            'date_fermeture' => now()->addMonth(),
+            'description' => 'Programme de test.',
+            'actif' => true,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function donneesCandidat(string $prenom = 'Awa', string $nom = 'Ndiaye'): array
+    {
+        return [
+            'nom' => $nom,
+            'prenom' => $prenom,
+            'date_naissance' => '1999-01-15',
+            'email' => 'awa-multiprogramme@example.com',
+            'telephone' => '775000000',
+            'pays' => 'Sénégal',
+            'adresse' => 'Dakar',
+            'derniere_formation' => 'Licence',
+            'etablissement_origine' => 'Université X',
+        ];
     }
 }

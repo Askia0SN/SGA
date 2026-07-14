@@ -14,7 +14,9 @@ class GuestLayout extends Component
     {
         return view('layouts.guest');
     }
+
     public $noFooter = false;
+
     /**
      * Create the component instance.
      *
