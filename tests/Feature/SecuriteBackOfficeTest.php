@@ -8,6 +8,7 @@ use App\Notifications\InvitationCompteAdmission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class SecuriteBackOfficeTest extends TestCase
@@ -98,12 +99,13 @@ class SecuriteBackOfficeTest extends TestCase
     public function test_commande_cree_le_premier_super_administrateur(): void
     {
         Role::create(['nom' => 'super_admin', 'libelle' => 'Super administrateur']);
+        $motDePasse = Str::random(16).'aA1!';
 
         $this->artisan('sga:creer-super-admin', [
             '--prenom' => 'Aminata',
             '--nom' => 'Fall',
             '--email' => 'admin@epf.fr',
-            '--password' => 'MotDePasse!2026',
+            '--password' => $motDePasse,
         ])->assertSuccessful();
 
         $utilisateur = User::where('email', 'admin@epf.fr')->firstOrFail();
@@ -111,6 +113,6 @@ class SecuriteBackOfficeTest extends TestCase
         $this->assertTrue($utilisateur->actif);
         $this->assertTrue($utilisateur->hasRole('super_admin'));
         $this->assertTrue($utilisateur->hasVerifiedEmail());
-        $this->assertTrue(Hash::check('MotDePasse!2026', $utilisateur->password));
+        $this->assertTrue(Hash::check($motDePasse, $utilisateur->password));
     }
 }
