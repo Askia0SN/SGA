@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\StatutCandidature;
 use App\Models\Candidat;
 use App\Models\Candidature;
 use App\Models\DocumentCandidature;
@@ -33,7 +34,7 @@ class CandidatureSubmissionService
                 'derniere_formation' => $donnees['derniere_formation'] ?? $candidature->derniere_formation,
                 'etablissement_origine' => $donnees['etablissement_origine'] ?? $candidature->etablissement_origine,
                 'lettre_motivation' => $donnees['lettre_motivation'] ?? $candidature->lettre_motivation,
-                'statut' => 'brouillon',
+                'statut' => StatutCandidature::Brouillon,
             ]);
 
             try {
@@ -68,12 +69,12 @@ class CandidatureSubmissionService
                 'derniere_formation' => $donnees['derniere_formation'],
                 'etablissement_origine' => $donnees['etablissement_origine'],
                 'lettre_motivation' => $donnees['lettre_motivation'] ?? $candidature->lettre_motivation,
-                'statut' => 'soumise',
+                'statut' => StatutCandidature::Soumise,
                 'soumise_le' => now(),
             ]);
 
             $this->enregistrerDocuments($candidature, $fichiers);
-            $this->enregistrerHistorique($candidature, $ancienStatut, 'soumise', 'Candidature soumise par le candidat');
+            $this->enregistrerHistorique($candidature, $ancienStatut, StatutCandidature::Soumise, 'Candidature soumise par le candidat');
 
             $candidature = $candidature->fresh(['candidat', 'programme', 'documents']);
 
@@ -110,46 +111,46 @@ class CandidatureSubmissionService
         );
     }
 
-   private function trouverOuCreerCandidature(Programme $programme, Candidat $candidat, ?int $candidatureId): Candidature
-{
-    if ($candidatureId) {
-        $candidature = Candidature::query()
-            ->where('id', $candidatureId)
+    private function trouverOuCreerCandidature(Programme $programme, Candidat $candidat, ?int $candidatureId): Candidature
+    {
+        if ($candidatureId) {
+            $candidature = Candidature::query()
+                ->where('id', $candidatureId)
+                ->where('candidat_id', $candidat->id)
+                ->where('programme_id', $programme->id)
+                ->firstOrFail();
+
+            if (! in_array($candidature->statut, [StatutCandidature::Brouillon, StatutCandidature::Soumise], true)) {
+                abort(403, 'Cette candidature ne peut plus être modifiée.');
+            }
+
+            return $candidature;
+        }
+
+        $existante = Candidature::query()
             ->where('candidat_id', $candidat->id)
             ->where('programme_id', $programme->id)
-            ->firstOrFail();
+            ->first();
 
-        if (! in_array($candidature->statut, ['brouillon', 'soumise'], true)) {
-            abort(403, 'Cette candidature ne peut plus être modifiée.');
+        if ($existante) {
+            if ($existante->statut !== StatutCandidature::Brouillon) {
+                abort(403, 'Vous avez déjà soumis une candidature pour ce programme.');
+            }
+
+            return $existante;
         }
+
+        $candidature = new Candidature([
+            'candidat_id' => $candidat->id,
+            'programme_id' => $programme->id,
+            'statut' => StatutCandidature::Brouillon,
+        ]);
+
+        $candidature->code_suivi = $this->codeSuiviGenerator->generer();
+        $candidature->save();
 
         return $candidature;
     }
-
-    $existante = Candidature::query()
-        ->where('candidat_id', $candidat->id)
-        ->where('programme_id', $programme->id)
-        ->first();
-
-    if ($existante) {
-        if (! in_array($existante->statut, ['brouillon'], true)) {
-            abort(403, 'Vous avez déjà soumis une candidature pour ce programme.');
-        }
-
-        return $existante;
-    }
-
-    $candidature = new Candidature([
-        'candidat_id' => $candidat->id,
-        'programme_id' => $programme->id,
-        'statut' => 'brouillon',
-    ]);
-
-    $candidature->code_suivi = $this->codeSuiviGenerator->generer();
-    $candidature->save();
-
-    return $candidature;
-}
 
     /**
      * @param  array<int, UploadedFile|array{chemin: string, nom_original: string, type_mime: string, taille_octets: int}>  $fichiers
@@ -258,14 +259,14 @@ class CandidatureSubmissionService
 
     private function enregistrerHistorique(
         Candidature $candidature,
-        ?string $ancienStatut,
-        string $nouveauStatut,
+        ?StatutCandidature $ancienStatut,
+        StatutCandidature $nouveauStatut,
         ?string $commentaire = null,
     ): void {
         HistoriqueCandidature::create([
             'candidature_id' => $candidature->id,
-            'ancien_statut' => $ancienStatut,
-            'nouveau_statut' => $nouveauStatut,
+            'ancien_statut' => $ancienStatut?->value,
+            'nouveau_statut' => $nouveauStatut->value,
             'acteur' => 'candidat',
             'commentaire' => $commentaire,
         ]);

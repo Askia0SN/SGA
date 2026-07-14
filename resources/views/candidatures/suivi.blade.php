@@ -1,17 +1,4 @@
 <x-public-layout title="Suivre une candidature - SGA EPF">
-    @php
-        $libellesStatut = [
-            'brouillon' => 'Brouillon',
-            'soumise' => 'Candidature soumise',
-            'complement_demande' => 'Complement demande',
-            'en_traitement_admission' => 'En cours d etude',
-            'transmise_au_jury' => 'Transmise au jury',
-            'admise' => 'Candidature admise',
-            'refusee' => 'Candidature refusee',
-            'abandonnee' => 'Candidature abandonnee',
-        ];
-    @endphp
-
     <section class="bg-white">
         <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
             <div class="text-center">
@@ -48,7 +35,7 @@
                     <section class="mx-auto mt-6 max-w-xl overflow-hidden rounded-lg border border-[#e8e2f5]">
                         <div class="border-b border-[#e8e2f5] bg-[#27185f] px-6 py-5 text-white">
                             <p class="text-xs font-bold uppercase text-white/70">Statut actuel</p>
-                            <h2 class="mt-1 text-xl font-extrabold">{{ $libellesStatut[$candidature->statut] ?? $candidature->statut }}</h2>
+                            <h2 class="mt-1 text-xl font-extrabold">{{ $candidature->statut->libelle() }}</h2>
                         </div>
                         <dl class="divide-y divide-[#eee8f7] bg-white px-6">
                             <div class="py-4 sm:flex sm:items-center sm:justify-between sm:gap-5">

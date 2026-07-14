@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StatutCandidature;
+use App\Livewire\Public\FormulaireCandidature;
 use App\Models\Candidat;
 use App\Models\Candidature;
 use App\Models\Programme;
 use App\Models\TypeDocument;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\CandidatureSubmissionService;
+use App\Services\CodeSuiviGenerator;
+use App\Services\EmailService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -48,8 +52,8 @@ class PublicCandidatureWorkflowTest extends TestCase
         $response->assertSee('Déposer ma candidature');
 
         $this->app->instance(CandidatureSubmissionService::class, new CandidatureSubmissionService(
-            new \App\Services\CodeSuiviGenerator(),
-            new \App\Services\EmailService(),
+            new CodeSuiviGenerator,
+            new EmailService,
         ));
 
         $candidature = app(CandidatureSubmissionService::class)->soumettre(
@@ -77,7 +81,7 @@ class PublicCandidatureWorkflowTest extends TestCase
 
         $candidature = Candidature::query()->where('candidat_id', $candidat->id)->where('programme_id', $programme->id)->first();
         $this->assertNotNull($candidature);
-        $this->assertSame('soumise', $candidature->statut);
+        $this->assertSame(StatutCandidature::Soumise, $candidature->statut);
         $this->assertNotNull($candidature->code_suivi);
 
         $this->get('/candidature/confirmation/'.$candidature->code_suivi)
@@ -100,7 +104,7 @@ class PublicCandidatureWorkflowTest extends TestCase
             'actif' => true,
         ]);
 
-        $component = Livewire::test(\App\Livewire\Public\FormulaireCandidature::class, ['programme' => $programme])
+        $component = Livewire::test(FormulaireCandidature::class, ['programme' => $programme])
             ->set('nom', 'Diop')
             ->set('prenom', 'Awa')
             ->set('date_naissance', '1999-01-15')
@@ -160,7 +164,7 @@ class PublicCandidatureWorkflowTest extends TestCase
             [$invalidFile],
         );
 
-        $this->assertSame('soumise', $candidature->statut);
+        $this->assertSame(StatutCandidature::Soumise, $candidature->statut);
         $this->assertDatabaseHas('candidatures', [
             'id' => $candidature->id,
             'statut' => 'soumise',
@@ -182,8 +186,8 @@ class PublicCandidatureWorkflowTest extends TestCase
         ]);
 
         $this->app->instance(CandidatureSubmissionService::class, new CandidatureSubmissionService(
-            new \App\Services\CodeSuiviGenerator(),
-            new \App\Services\EmailService(),
+            new CodeSuiviGenerator,
+            new EmailService,
         ));
 
         $candidature = app(CandidatureSubmissionService::class)->sauvegarderBrouillon(
@@ -202,7 +206,7 @@ class PublicCandidatureWorkflowTest extends TestCase
             null,
         );
 
-        $this->assertSame('brouillon', $candidature->statut);
+        $this->assertSame(StatutCandidature::Brouillon, $candidature->statut);
         $this->assertNotNull($candidature->code_suivi);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatutCandidature;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -72,6 +73,7 @@ class Candidature extends Model
     protected function casts(): array
     {
         return [
+            'statut' => StatutCandidature::class,
             'soumise_le' => 'datetime',
             'transmise_au_jury_le' => 'datetime',
             'decision_le' => 'datetime',

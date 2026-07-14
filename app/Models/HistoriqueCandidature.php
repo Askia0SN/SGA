@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatutCandidature;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -35,6 +36,8 @@ class HistoriqueCandidature extends Model
     protected function casts(): array
     {
         return [
+            'ancien_statut' => StatutCandidature::class,
+            'nouveau_statut' => StatutCandidature::class,
             'cree_le' => 'datetime',
         ];
     }

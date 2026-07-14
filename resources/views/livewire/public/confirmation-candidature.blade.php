@@ -7,7 +7,7 @@
         </div>
         <h1 class="mt-5 text-3xl font-bold text-slate-900">Candidature enregistrée</h1>
         <p class="mt-3 text-base text-slate-600">
-            @if ($candidature->statut === 'soumise')
+            @if ($candidature->statut === \App\Enums\StatutCandidature::Soumise)
                 Votre candidature pour <span class="font-semibold text-slate-900">{{ $candidature->programme->nom }}</span> a bien été soumise.
             @else
                 Votre brouillon de candidature pour <span class="font-semibold text-slate-900">{{ $candidature->programme->nom }}</span> a bien été enregistré.
@@ -32,7 +32,7 @@
         <div class="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
             <p><span class="font-semibold text-slate-900">Candidat :</span> {{ $candidature->candidat->prenom }} {{ $candidature->candidat->nom }}</p>
             <p class="mt-2"><span class="font-semibold text-slate-900">Programme :</span> {{ $candidature->programme->nom }}</p>
-            <p class="mt-2"><span class="font-semibold text-slate-900">Statut :</span> {{ $candidature->statut }}</p>
+            <p class="mt-2"><span class="font-semibold text-slate-900">Statut :</span> {{ $candidature->statut->libelle() }}</p>
         </div>
     </div>
 
