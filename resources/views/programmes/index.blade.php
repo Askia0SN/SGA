@@ -1,6 +1,7 @@
 <x-public-layout title="Programmes - SGA EPF">
     <section class="bg-white">
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            @include('components.page-links')
             <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div class="max-w-3xl">
                     <p class="text-sm font-extrabold uppercase text-[#d91426]">Formations EPF Africa</p>

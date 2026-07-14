@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :no-footer="true">
     <div class="mb-6">
         <p class="text-xs font-extrabold uppercase text-[#d91426]">Creation de compte</p>
         <h1 class="mt-1 text-2xl font-extrabold text-[#191339]">Nouvel utilisateur</h1>
