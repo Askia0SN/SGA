@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Enums\StatutCandidature;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Candidature extends Model
 {
@@ -68,6 +70,62 @@ class Candidature extends Model
     public function emailsEnvoyes(): HasMany
     {
         return $this->hasMany(EmailEnvoye::class);
+    }
+
+    public function dossierEstComplet(): bool
+    {
+        return $this->documentsObligatoiresNonValides()->isEmpty();
+    }
+
+    /**
+     * Limite les dossiers aux candidatures que l'utilisateur peut consulter.
+     */
+    public function scopeVisiblePour(Builder $query, User $utilisateur): Builder
+    {
+        if ($utilisateur->hasAnyRole(['super_admin', 'service_admission'])) {
+            return $query;
+        }
+
+        if (! $utilisateur->hasRole('jury')) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function (Builder $requete): void {
+            $requete
+                ->whereIn('statut', [
+                    StatutCandidature::TransmiseAuJury->value,
+                    StatutCandidature::Admise->value,
+                    StatutCandidature::Refusee->value,
+                ])
+                ->orWhere(function (Builder $complements): void {
+                    $complements
+                        ->where('statut', StatutCandidature::ComplementDemande->value)
+                        ->whereHas('historiques', function (Builder $historique): void {
+                            $historique
+                                ->where('ancien_statut', StatutCandidature::TransmiseAuJury->value)
+                                ->where('nouveau_statut', StatutCandidature::ComplementDemande->value);
+                        });
+                });
+        });
+    }
+
+    /**
+     * @return Collection<int, TypeDocument>
+     */
+    public function documentsObligatoiresNonValides(): Collection
+    {
+        $this->loadMissing(['programme.typesDocuments', 'documents']);
+
+        $typesValides = $this->documents
+            ->where('statut', 'valide')
+            ->pluck('type_document_id')
+            ->filter()
+            ->unique();
+
+        return $this->programme->typesDocuments
+            ->filter(fn (TypeDocument $typeDocument) => (bool) $typeDocument->pivot->obligatoire)
+            ->reject(fn (TypeDocument $typeDocument) => $typesValides->contains($typeDocument->id))
+            ->values();
     }
 
     protected function casts(): array

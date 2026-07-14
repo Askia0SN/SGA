@@ -18,12 +18,12 @@ enum StatutCandidature: string
         return match ($this) {
             self::Brouillon => 'Brouillon',
             self::Soumise => 'Candidature soumise',
-            self::ComplementDemande => 'Complement demande',
-            self::EnTraitementAdmission => 'En cours d etude',
+            self::ComplementDemande => 'Complément demandé',
+            self::EnTraitementAdmission => 'En cours d’étude',
             self::TransmiseAuJury => 'Transmise au jury',
             self::Admise => 'Candidature admise',
-            self::Refusee => 'Candidature refusee',
-            self::Abandonnee => 'Candidature abandonnee',
+            self::Refusee => 'Candidature refusée',
+            self::Abandonnee => 'Candidature abandonnée',
         };
     }
 

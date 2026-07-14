@@ -19,6 +19,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Tableau de bord
                     </x-nav-link>
+                    <x-nav-link :href="route('candidatures.index')" :active="request()->routeIs('candidatures.index', 'candidatures.show')">
+                        Candidatures
+                    </x-nav-link>
                     @if (Auth::user()->hasRole('super_admin'))
                         <x-nav-link :href="route('utilisateurs.index')" :active="request()->routeIs('utilisateurs.*')">
                             Utilisateurs
@@ -78,6 +81,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Tableau de bord
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('candidatures.index')" :active="request()->routeIs('candidatures.index', 'candidatures.show')">
+                Candidatures
             </x-responsive-nav-link>
             @if (Auth::user()->hasRole('super_admin'))
                 <x-responsive-nav-link :href="route('utilisateurs.index')" :active="request()->routeIs('utilisateurs.*')">

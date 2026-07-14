@@ -139,7 +139,7 @@ class WorkflowCandidature
 
     public function dossierEstComplet(Candidature $candidature): bool
     {
-        return $this->documentsObligatoiresNonValides($candidature) === [];
+        return $candidature->dossierEstComplet();
     }
 
     /**
@@ -147,25 +147,8 @@ class WorkflowCandidature
      */
     public function documentsObligatoiresNonValides(Candidature $candidature): array
     {
-        $documentsObligatoires = $candidature->programme
-            ->typesDocuments()
-            ->wherePivot('obligatoire', true)
-            ->get(['types_documents.id', 'types_documents.nom']);
-
-        if ($documentsObligatoires->isEmpty()) {
-            return [];
-        }
-
-        $typesValides = $candidature->documents()
-            ->where('statut', 'valide')
-            ->whereIn('type_document_id', $documentsObligatoires->pluck('id'))
-            ->pluck('type_document_id')
-            ->unique();
-
-        return $documentsObligatoires
-            ->reject(fn ($typeDocument) => $typesValides->contains($typeDocument->id))
+        return $candidature->documentsObligatoiresNonValides()
             ->pluck('nom')
-            ->values()
             ->all();
     }
 
