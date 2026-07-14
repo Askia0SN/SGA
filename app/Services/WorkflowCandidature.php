@@ -8,10 +8,13 @@ use App\Models\User;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class WorkflowCandidature
 {
+    public function __construct(private EmailService $emailService) {}
+
     public function prendreEnCharge(Candidature $candidature, User $utilisateur, ?string $commentaire = null): Candidature
     {
         return $this->transitionner(
@@ -33,7 +36,7 @@ class WorkflowCandidature
             ]);
         }
 
-        return $this->transitionner(
+        $resultat = $this->transitionner(
             $candidature,
             $utilisateur,
             'demanderComplement',
@@ -59,6 +62,14 @@ class WorkflowCandidature
                 }
             },
         );
+
+        $this->executerCommunication(
+            fn () => $this->emailService->envoyerDemandeComplement($resultat, $message, $utilisateur),
+            $resultat,
+            'complement_demande',
+        );
+
+        return $resultat;
     }
 
     public function reprendreTraitement(Candidature $candidature, User $utilisateur, ?string $commentaire = null): Candidature
@@ -74,7 +85,7 @@ class WorkflowCandidature
 
     public function transmettreAuJury(Candidature $candidature, User $utilisateur, ?string $commentaire = null): Candidature
     {
-        return $this->transitionner(
+        $resultat = $this->transitionner(
             $candidature,
             $utilisateur,
             'transmettreAuJury',
@@ -94,6 +105,15 @@ class WorkflowCandidature
                 'transmise_au_jury_le' => now(),
             ],
         );
+
+        $this->executerCommunication(
+            fn () => $this->emailService->envoyerTransmissionJury($resultat, $utilisateur),
+            $resultat,
+            'candidature_transmise_jury',
+        );
+        $this->notifierJurys($resultat);
+
+        return $resultat;
     }
 
     public function decider(
@@ -114,7 +134,7 @@ class WorkflowCandidature
             ]);
         }
 
-        return $this->transitionner(
+        $resultat = $this->transitionner(
             $candidature,
             $utilisateur,
             'decider',
@@ -135,6 +155,14 @@ class WorkflowCandidature
                 'decision_le' => now(),
             ],
         );
+
+        $this->executerCommunication(
+            fn () => $this->emailService->envoyerDecision($resultat, $decision, $commentaire, $utilisateur),
+            $resultat,
+            $decision === StatutCandidature::Admise ? 'candidature_admise' : 'candidature_refusee',
+        );
+
+        return $resultat;
     }
 
     public function dossierEstComplet(Candidature $candidature): bool
@@ -223,5 +251,47 @@ class WorkflowCandidature
             $utilisateur->hasRole('jury') => 'jury',
             default => 'service_admission',
         };
+    }
+
+    private function executerCommunication(
+        Closure $communication,
+        Candidature $candidature,
+        string $evenement,
+    ): void {
+        try {
+            $communication();
+        } catch (\Throwable $exception) {
+            report($exception);
+            Log::error('Échec de la communication liée au workflow de candidature.', [
+                'candidature_id' => $candidature->id,
+                'evenement' => $evenement,
+                'exception' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function notifierJurys(Candidature $candidature): void
+    {
+        try {
+            User::query()
+                ->where('actif', true)
+                ->whereHas('roles', fn ($query) => $query->where('nom', 'jury'))
+                ->each(function (User $jury) use ($candidature): void {
+                    $jury->notificationsInternes()->create([
+                        'type' => 'candidature_transmise_jury',
+                        'message' => 'Un nouveau dossier est prêt à être évalué.',
+                        'donnees' => [
+                            'candidature_id' => $candidature->id,
+                            'code_suivi' => $candidature->code_suivi,
+                        ],
+                    ]);
+                });
+        } catch (\Throwable $exception) {
+            report($exception);
+            Log::error('Échec de la notification interne des jurys.', [
+                'candidature_id' => $candidature->id,
+                'exception' => $exception->getMessage(),
+            ]);
+        }
     }
 }

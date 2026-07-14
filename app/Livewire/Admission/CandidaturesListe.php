@@ -54,6 +54,8 @@ class CandidaturesListe extends Component
         $utilisateur = auth()->user();
         Gate::forUser($utilisateur)->authorize('viewAny', Candidature::class);
 
+        $estJury = $utilisateur->hasRole('jury')
+            && ! $utilisateur->hasAnyRole(['super_admin', 'service_admission']);
         $base = Candidature::query()->visiblePour($utilisateur);
         $requete = (clone $base)
             ->with([
@@ -86,12 +88,21 @@ class CandidaturesListe extends Component
             'candidatures' => $requete->paginate(15),
             'programmes' => Programme::query()->orderBy('nom')->get(['id', 'nom']),
             'statuts' => StatutCandidature::cases(),
-            'indicateurs' => [
-                'total' => (clone $base)->count(),
-                'nouvelles' => (clone $base)->where('statut', StatutCandidature::Soumise)->count(),
-                'en_traitement' => (clone $base)->where('statut', StatutCandidature::EnTraitementAdmission)->count(),
-                'jury' => (clone $base)->where('statut', StatutCandidature::TransmiseAuJury)->count(),
-            ],
+            'estJury' => $estJury,
+            'indicateurs' => $estJury
+                ? [
+                    'total' => (clone $base)->count(),
+                    'a_evaluer' => (clone $base)->where('statut', StatutCandidature::TransmiseAuJury)->count(),
+                    'complements' => (clone $base)->where('statut', StatutCandidature::ComplementDemande)->count(),
+                    'admises' => (clone $base)->where('statut', StatutCandidature::Admise)->count(),
+                    'refusees' => (clone $base)->where('statut', StatutCandidature::Refusee)->count(),
+                ]
+                : [
+                    'total' => (clone $base)->count(),
+                    'nouvelles' => (clone $base)->where('statut', StatutCandidature::Soumise)->count(),
+                    'en_traitement' => (clone $base)->where('statut', StatutCandidature::EnTraitementAdmission)->count(),
+                    'jury' => (clone $base)->where('statut', StatutCandidature::TransmiseAuJury)->count(),
+                ],
         ]);
     }
 

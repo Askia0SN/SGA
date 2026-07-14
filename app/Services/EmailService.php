@@ -2,40 +2,103 @@
 
 namespace App\Services;
 
+use App\Enums\StatutCandidature;
 use App\Mail\CandidatureSoumiseMail;
 use App\Models\Candidature;
 use App\Models\EmailEnvoye;
 use App\Models\ModeleEmail;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use InvalidArgumentException;
 
 class EmailService
 {
     public function envoyerCandidatureSoumise(Candidature $candidature): EmailEnvoye
     {
-        $candidature->load(['candidat', 'programme']);
+        return $this->envoyerEvenement($candidature, 'candidature_soumise', [
+            '{date_soumission}' => $candidature->soumise_le?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i'),
+        ]);
+    }
+
+    public function envoyerCandidatureBrouillon(Candidature $candidature): EmailEnvoye
+    {
+        return $this->envoyerEvenement($candidature, 'candidature_brouillon', [
+            '{date_enregistrement}' => now()->format('d/m/Y H:i'),
+        ]);
+    }
+
+    public function envoyerDemandeComplement(
+        Candidature $candidature,
+        string $message,
+        ?User $utilisateur = null,
+    ): EmailEnvoye {
+        return $this->envoyerEvenement($candidature, 'complement_demande', [
+            '{message}' => $message,
+        ], $utilisateur);
+    }
+
+    public function envoyerTransmissionJury(Candidature $candidature, ?User $utilisateur = null): EmailEnvoye
+    {
+        return $this->envoyerEvenement($candidature, 'candidature_transmise_jury', [
+            '{date_transmission}' => $candidature->transmise_au_jury_le?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i'),
+        ], $utilisateur);
+    }
+
+    public function envoyerDecision(
+        Candidature $candidature,
+        StatutCandidature $decision,
+        ?string $commentaire,
+        ?User $utilisateur = null,
+    ): EmailEnvoye {
+        $evenement = match ($decision) {
+            StatutCandidature::Admise => 'candidature_admise',
+            StatutCandidature::Refusee => 'candidature_refusee',
+            default => throw new InvalidArgumentException('La décision doit être une admission ou un refus.'),
+        };
+
+        return $this->envoyerEvenement($candidature, $evenement, [
+            '{message}' => trim((string) $commentaire),
+            '{date_decision}' => $candidature->decision_le?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i'),
+        ], $utilisateur);
+    }
+
+    /**
+     * @param  array<string, string>  $variablesSpecifiques
+     */
+    private function envoyerEvenement(
+        Candidature $candidature,
+        string $evenement,
+        array $variablesSpecifiques = [],
+        ?User $utilisateur = null,
+    ): EmailEnvoye {
+        $candidature->loadMissing(['candidat', 'programme']);
         $modele = ModeleEmail::query()
-            ->where('evenement', 'candidature_soumise')
+            ->where('evenement', $evenement)
             ->where('actif', true)
             ->first();
+        $fallback = $this->fallback($evenement);
 
-        $variables = [
+        $variables = array_merge([
             '{nom_candidat}' => $candidature->candidat->prenom.' '.$candidature->candidat->nom,
             '{programme}' => $candidature->programme->nom,
             '{code_suivi}' => $candidature->code_suivi,
-            '{date_soumission}' => $candidature->soumise_le?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i'),
-        ];
+        ], $variablesSpecifiques);
 
-        $objet = $modele?->objet ?? 'Confirmation de candidature - EPF Africa';
-        $contenu = $modele?->contenu_html ?? '<p>Bonjour {nom_candidat},</p><p>Votre code de suivi est <strong>{code_suivi}</strong>.</p>';
+        $variablesObjet = array_map(
+            fn (string $valeur): string => str_replace(["\r", "\n"], ' ', strip_tags($valeur)),
+            $variables,
+        );
+        $variablesHtml = array_map(fn (string $valeur): string => e($valeur), $variables);
+
+        $objet = strtr($modele?->objet ?? $fallback['objet'], $variablesObjet);
+        $contenu = strtr($modele?->contenu_html ?? $fallback['contenu'], $variablesHtml);
         $signature = $modele?->signature ?? 'Service Admission - EPF Africa';
-
-        $objet = str_replace(array_keys($variables), array_values($variables), $objet);
-        $contenu = str_replace(array_keys($variables), array_values($variables), $contenu);
 
         $log = EmailEnvoye::create([
             'candidature_id' => $candidature->id,
             'candidat_id' => $candidature->candidat_id,
-            'evenement' => 'candidature_soumise',
+            'user_id' => $utilisateur?->id,
+            'evenement' => $evenement,
             'destinataire_email' => $candidature->candidat->email,
             'objet' => $objet,
             'contenu_html' => $contenu,
@@ -45,7 +108,7 @@ class EmailService
 
         try {
             Mail::to($candidature->candidat->email)->send(
-                new CandidatureSoumiseMail($candidature, $objet, $contenu, $signature)
+                new CandidatureSoumiseMail($candidature, $objet, $contenu, $signature),
             );
 
             $log->update([
@@ -64,57 +127,36 @@ class EmailService
         return $log;
     }
 
-    public function envoyerCandidatureBrouillon(Candidature $candidature): EmailEnvoye
+    /**
+     * @return array{objet: string, contenu: string}
+     */
+    private function fallback(string $evenement): array
     {
-        $candidature->load(['candidat', 'programme']);
-        $modele = ModeleEmail::query()
-            ->where('evenement', 'candidature_brouillon')
-            ->where('actif', true)
-            ->first();
-
-        $variables = [
-            '{nom_candidat}' => $candidature->candidat->prenom.' '.$candidature->candidat->nom,
-            '{programme}' => $candidature->programme->nom,
-            '{code_suivi}' => $candidature->code_suivi,
-            '{date_enregistrement}' => now()->format('d/m/Y H:i'),
-        ];
-
-        $objet = $modele?->objet ?? 'Brouillon de candidature enregistré - EPF Africa';
-        $contenu = $modele?->contenu_html ?? '<p>Bonjour {nom_candidat},</p><p>Votre brouillon de candidature au programme {programme} a bien été enregistré. Votre code de suivi est <strong>{code_suivi}</strong>.</p>';
-        $signature = $modele?->signature ?? 'Service Admission - EPF Africa';
-
-        $objet = str_replace(array_keys($variables), array_values($variables), $objet);
-        $contenu = str_replace(array_keys($variables), array_values($variables), $contenu);
-
-        $log = EmailEnvoye::create([
-            'candidature_id' => $candidature->id,
-            'candidat_id' => $candidature->candidat_id,
-            'evenement' => 'candidature_brouillon',
-            'destinataire_email' => $candidature->candidat->email,
-            'objet' => $objet,
-            'contenu_html' => $contenu,
-            'statut' => 'en_attente',
-            'donnees' => $variables,
-        ]);
-
-        try {
-            Mail::to($candidature->candidat->email)->send(
-                new CandidatureSoumiseMail($candidature, $objet, $contenu, $signature)
-            );
-
-            $log->update([
-                'statut' => 'envoye',
-                'envoye_le' => now(),
-            ]);
-        } catch (\Throwable $exception) {
-            $log->update([
-                'statut' => 'echec',
-                'message_erreur' => $exception->getMessage(),
-            ]);
-
-            throw $exception;
-        }
-
-        return $log;
+        return match ($evenement) {
+            'candidature_brouillon' => [
+                'objet' => 'Brouillon de candidature enregistré - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon pour {programme} a été enregistré. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+            ],
+            'complement_demande' => [
+                'objet' => 'Complément de dossier requis - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Un complément est nécessaire pour poursuivre votre dossier : {message}</p>',
+            ],
+            'candidature_transmise_jury' => [
+                'objet' => 'Mise à jour de votre candidature - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre dossier pour {programme} est complet et a été transmis au jury.</p>',
+            ],
+            'candidature_admise' => [
+                'objet' => 'Admission - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Nous avons le plaisir de vous annoncer votre admission au programme {programme}.</p>',
+            ],
+            'candidature_refusee' => [
+                'objet' => 'Résultat de candidature - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Après étude, votre candidature au programme {programme} n’a pas été retenue.</p><p>{message}</p>',
+            ],
+            default => [
+                'objet' => 'Confirmation de candidature - EPF Africa',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme {programme} a bien été reçue. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+            ],
+        };
     }
 }

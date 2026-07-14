@@ -11,7 +11,7 @@
                     <p class="mt-2 font-mono text-sm font-bold text-[#6d6684]">{{ $candidature->code_suivi }}</p>
                 </div>
 
-                <div class="flex flex-wrap gap-2">
+                <div class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                     @can('prendreEnCharge', $candidature)
                         <button type="button" wire:click="prendreEnCharge" class="rounded-md bg-[#27185f] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#3b267e]">
                             Prendre en charge
@@ -22,11 +22,24 @@
                             Reprendre le traitement
                         </button>
                     @endcan
+                    @can('demanderComplement', $candidature)
+                        <button type="button" wire:click="ouvrirDemandeComplement" class="rounded-md border border-[#d8d0ea] bg-white px-4 py-2.5 text-sm font-bold text-[#27185f] hover:border-[#27185f]">
+                            Demander un complément
+                        </button>
+                    @endcan
                     @can('transmettreAuJury', $candidature)
                         <button type="button" wire:click="transmettreAuJury" wire:confirm="Confirmer la transmission de ce dossier au jury ?"
                             @disabled(! $candidature->dossierEstComplet())
                             class="rounded-md bg-[#d91426] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#b70f1e] disabled:cursor-not-allowed disabled:bg-[#c8c3d2]">
                             Transmettre au jury
+                        </button>
+                    @endcan
+                    @can('decider', $candidature)
+                        <button type="button" wire:click="ouvrirDecision('admise')" class="rounded-md bg-[#17603a] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#104b2d]">
+                            Admettre
+                        </button>
+                        <button type="button" wire:click="ouvrirDecision('refusee')" class="rounded-md bg-[#d91426] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#b70f1e]">
+                            Refuser
                         </button>
                     @endcan
                 </div>
@@ -41,10 +54,67 @@
             </div>
         @endif
 
+        @if (session('warning'))
+            <div class="border border-[#f0d8a8] bg-[#fff9e9] px-4 py-3 text-sm font-semibold text-[#805c12]">
+                {{ session('warning') }}
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="border border-[#f0c8ce] bg-[#fff4f5] px-4 py-3 text-sm font-semibold text-[#b70f1e]">
                 {{ $errors->first() }}
             </div>
+        @endif
+
+        @if ($actionOuverte === 'complement')
+            <section class="border border-[#d8d0ea] bg-white p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#27185f]">Demander un complément</h2>
+                        <p class="mt-1 text-sm text-[#6d6684]">Le message sera visible dans le suivi et envoyé par email au candidat.</p>
+                    </div>
+                    <button type="button" wire:click="fermerAction" class="text-sm font-bold text-[#6d6684] hover:text-[#27185f]">Fermer</button>
+                </div>
+                <form wire:submit="demanderComplement" class="mt-4">
+                    <label for="message-complement" class="block text-sm font-extrabold text-[#27185f]">Pièce ou information attendue</label>
+                    <textarea id="message-complement" wire:model="messageComplement" rows="4" maxlength="2000"
+                        class="mt-2 block w-full rounded-md border-[#d8d0ea] text-sm shadow-sm focus:border-[#d91426] focus:ring-[#d91426]"
+                        placeholder="Ex. Merci de transmettre un relevé de notes complet et lisible."></textarea>
+                    @error('messageComplement') <p class="mt-1 text-sm font-semibold text-[#b70f1e]">{{ $message }}</p> @enderror
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button type="submit" class="rounded-md bg-[#27185f] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#3b267e]">Envoyer la demande</button>
+                        <button type="button" wire:click="fermerAction" class="rounded-md border border-[#d8d0ea] px-4 py-2.5 text-sm font-bold text-[#27185f]">Annuler</button>
+                    </div>
+                </form>
+            </section>
+        @endif
+
+        @if ($actionOuverte === 'decision')
+            <section class="border border-[#d8d0ea] bg-white p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p class="text-xs font-extrabold uppercase {{ $decision === 'admise' ? 'text-[#17603a]' : 'text-[#d91426]' }}">Décision du jury</p>
+                        <h2 class="mt-1 text-lg font-extrabold text-[#27185f]">{{ $decision === 'admise' ? 'Confirmer l’admission' : 'Confirmer le refus' }}</h2>
+                    </div>
+                    <button type="button" wire:click="fermerAction" class="text-sm font-bold text-[#6d6684] hover:text-[#27185f]">Fermer</button>
+                </div>
+                <form wire:submit="enregistrerDecision" class="mt-4">
+                    <label for="commentaire-decision" class="block text-sm font-extrabold text-[#27185f]">
+                        Commentaire {{ $decision === 'refusee' ? 'et motif obligatoire' : 'facultatif' }}
+                    </label>
+                    <textarea id="commentaire-decision" wire:model="commentaireDecision" rows="4" maxlength="2000"
+                        class="mt-2 block w-full rounded-md border-[#d8d0ea] text-sm shadow-sm focus:border-[#d91426] focus:ring-[#d91426]"
+                        placeholder="Saisissez l’avis du jury"></textarea>
+                    @error('commentaireDecision') <p class="mt-1 text-sm font-semibold text-[#b70f1e]">{{ $message }}</p> @enderror
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button type="submit" wire:confirm="Cette décision est définitive. Confirmer ?"
+                            class="rounded-md px-4 py-2.5 text-sm font-bold text-white {{ $decision === 'admise' ? 'bg-[#17603a] hover:bg-[#104b2d]' : 'bg-[#d91426] hover:bg-[#b70f1e]' }}">
+                            {{ $decision === 'admise' ? 'Confirmer l’admission' : 'Confirmer le refus' }}
+                        </button>
+                        <button type="button" wire:click="fermerAction" class="rounded-md border border-[#d8d0ea] px-4 py-2.5 text-sm font-bold text-[#27185f]">Annuler</button>
+                    </div>
+                </form>
+            </section>
         @endif
 
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.7fr)]">
@@ -130,6 +200,25 @@
                     </div>
                 </section>
 
+                @if ($candidature->messages->isNotEmpty())
+                    <section class="border border-[#e8e2f5] bg-white">
+                        <div class="border-b border-[#e8e2f5] px-5 py-4">
+                            <h2 class="text-lg font-extrabold text-[#27185f]">Échanges avec le candidat</h2>
+                        </div>
+                        <div class="divide-y divide-[#eee8f7]">
+                            @foreach ($candidature->messages->sortByDesc('created_at') as $messageCandidature)
+                                <article class="px-5 py-4">
+                                    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <p class="text-sm font-extrabold text-[#191339]">{{ $messageCandidature->utilisateur?->name ?? 'Système' }}</p>
+                                        <time class="text-xs font-semibold text-[#6d6684]">{{ $messageCandidature->created_at?->format('d/m/Y à H:i') }}</time>
+                                    </div>
+                                    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-[#423b57]">{{ $messageCandidature->contenu }}</p>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
                 <section class="border border-[#e8e2f5] bg-white">
                     <div class="border-b border-[#e8e2f5] px-5 py-4">
                         <h2 class="text-lg font-extrabold text-[#27185f]">Historique du traitement</h2>
@@ -185,6 +274,23 @@
                     <section class="border border-[#e8e2f5] bg-white p-5">
                         <h2 class="text-base font-extrabold text-[#27185f]">Motivation</h2>
                         <p class="mt-3 whitespace-pre-line text-sm leading-6 text-[#423b57]">{{ $candidature->lettre_motivation }}</p>
+                    </section>
+                @endif
+
+                @if ($candidature->avisJury->isNotEmpty())
+                    <section class="border border-[#e8e2f5] bg-white p-5">
+                        <h2 class="text-base font-extrabold text-[#27185f]">Avis du jury</h2>
+                        <div class="mt-4 space-y-4">
+                            @foreach ($candidature->avisJury->sortByDesc('decide_le') as $avis)
+                                <div class="border-l-2 border-[#d8d0ea] pl-3 text-sm">
+                                    <p class="font-extrabold text-[#191339]">{{ $avis->jury?->name ?? 'Jury' }}</p>
+                                    <p class="mt-1 text-[#6d6684]">{{ ucfirst(str_replace('_', ' ', $avis->decision)) }}</p>
+                                    @if ($avis->commentaire)
+                                        <p class="mt-2 leading-6 text-[#423b57]">{{ $avis->commentaire }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
                     </section>
                 @endif
             </aside>

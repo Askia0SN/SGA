@@ -51,6 +51,20 @@
                                 <dd class="mt-1 text-sm font-bold text-[#191339] sm:mt-0">{{ $candidature->soumise_le?->format('d/m/Y a H:i') ?? 'Date non renseignee' }}</dd>
                             </div>
                         </dl>
+
+                        @if ($candidature->messages->isNotEmpty())
+                            <div class="border-t border-[#e8e2f5] bg-[#fff9e9] px-6 py-5">
+                                <h3 class="text-sm font-extrabold text-[#805c12]">Informations demandées</h3>
+                                <div class="mt-3 space-y-3">
+                                    @foreach ($candidature->messages as $messageCandidature)
+                                        <article class="border-l-2 border-[#d91426] pl-3">
+                                            <p class="whitespace-pre-line text-sm leading-6 text-[#423b57]">{{ $messageCandidature->contenu }}</p>
+                                            <time class="mt-1 block text-xs font-semibold text-[#6d6684]">{{ $messageCandidature->created_at?->format('d/m/Y à H:i') }}</time>
+                                        </article>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </section>
                 @else
                     <div class="mx-auto mt-6 max-w-xl rounded-lg border border-[#f0c8ce] bg-[#fff4f5] p-5 text-center">

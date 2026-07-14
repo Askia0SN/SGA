@@ -25,7 +25,13 @@ class SuiviCandidatureController extends Controller
         $email = Str::lower(trim($donnees['email']));
 
         $candidature = Candidature::query()
-            ->with(['programme', 'historiques'])
+            ->with([
+                'programme',
+                'historiques',
+                'messages' => fn ($query) => $query
+                    ->where('visibilite', 'candidat')
+                    ->latest(),
+            ])
             ->where('code_suivi', $codeSuivi)
             ->whereHas('candidat', fn ($query) => $query->whereRaw('LOWER(email) = ?', [$email]))
             ->first();

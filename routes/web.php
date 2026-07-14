@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\StatutCandidature;
 use App\Http\Controllers\DocumentCandidatureController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuiviCandidatureController;
+use App\Http\Controllers\TableauBordController;
 use App\Http\Controllers\UtilisateurController;
 use App\Livewire\Admission\CandidatureDetail;
 use App\Livewire\Admission\CandidaturesListe;
@@ -12,7 +12,6 @@ use App\Livewire\Public\ConfirmationCandidature;
 use App\Livewire\Public\FormulaireCandidature;
 use App\Livewire\Public\ProgrammeDetail;
 use App\Livewire\Public\ProgrammesListe;
-use App\Models\Candidature;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -37,19 +36,7 @@ Route::post('/suivi-candidature', [SuiviCandidatureController::class, 'recherche
 Route::prefix('admission')
     ->middleware(['auth', 'compte.actif', 'verified', 'role:super_admin,service_admission,jury'])
     ->group(function () {
-        Route::get('/tableau-de-bord', function () {
-            $base = Candidature::query()->visiblePour(request()->user());
-
-            return view('dashboard', [
-                'nombreCandidatures' => (clone $base)->count(),
-                'nombreATraiter' => (clone $base)
-                    ->whereIn('statut', [
-                        StatutCandidature::Soumise->value,
-                        StatutCandidature::EnTraitementAdmission->value,
-                    ])
-                    ->count(),
-            ]);
-        })->name('dashboard');
+        Route::get('/tableau-de-bord', [TableauBordController::class, 'index'])->name('dashboard');
 
         Route::get('/candidatures', CandidaturesListe::class)->name('candidatures.index');
         Route::get('/candidatures/{candidature}', CandidatureDetail::class)->name('candidatures.show');

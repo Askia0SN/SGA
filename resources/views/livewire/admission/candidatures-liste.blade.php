@@ -3,8 +3,8 @@
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-extrabold uppercase text-[#d91426]">Gestion des admissions</p>
-                    <h1 class="mt-1 text-2xl font-extrabold text-[#191339]">Candidatures</h1>
+                    <p class="text-xs font-extrabold uppercase text-[#d91426]">{{ $estJury ? 'Espace jury' : 'Gestion des admissions' }}</p>
+                    <h1 class="mt-1 text-2xl font-extrabold text-[#191339]">{{ $estJury ? 'Dossiers à évaluer' : 'Candidatures' }}</h1>
                 </div>
                 <p class="text-sm font-semibold text-[#6d6684]">{{ $indicateurs['total'] }} dossier(s) accessible(s)</p>
             </div>
@@ -12,23 +12,42 @@
     </header>
 
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <section aria-label="Indicateurs" class="grid border border-[#e8e2f5] bg-white sm:grid-cols-2 lg:grid-cols-4">
+        <section aria-label="Indicateurs" class="grid border border-[#e8e2f5] bg-white sm:grid-cols-2 {{ $estJury ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }}">
             <div class="border-b border-[#e8e2f5] px-5 py-4 sm:border-r lg:border-b-0">
                 <p class="text-xs font-bold uppercase text-[#6d6684]">Tous les dossiers</p>
                 <p class="mt-1 text-2xl font-extrabold text-[#27185f]">{{ $indicateurs['total'] }}</p>
             </div>
-            <div class="border-b border-[#e8e2f5] px-5 py-4 lg:border-b-0 lg:border-r">
-                <p class="text-xs font-bold uppercase text-[#6d6684]">Nouvelles</p>
-                <p class="mt-1 text-2xl font-extrabold text-[#d91426]">{{ $indicateurs['nouvelles'] }}</p>
-            </div>
-            <div class="border-b border-[#e8e2f5] px-5 py-4 sm:border-b-0 sm:border-r">
-                <p class="text-xs font-bold uppercase text-[#6d6684]">En traitement</p>
-                <p class="mt-1 text-2xl font-extrabold text-[#185875]">{{ $indicateurs['en_traitement'] }}</p>
-            </div>
-            <div class="px-5 py-4">
-                <p class="text-xs font-bold uppercase text-[#6d6684]">Au jury</p>
-                <p class="mt-1 text-2xl font-extrabold text-[#4b3788]">{{ $indicateurs['jury'] }}</p>
-            </div>
+            @if ($estJury)
+                <div class="border-b border-[#e8e2f5] px-5 py-4 lg:border-b-0 lg:border-r">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">À évaluer</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#d91426]">{{ $indicateurs['a_evaluer'] }}</p>
+                </div>
+                <div class="border-b border-[#e8e2f5] px-5 py-4 sm:border-b-0 sm:border-r">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">Compléments</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#805c12]">{{ $indicateurs['complements'] }}</p>
+                </div>
+                <div class="border-b border-[#e8e2f5] px-5 py-4 lg:border-b-0 lg:border-r">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">Admis</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#17603a]">{{ $indicateurs['admises'] }}</p>
+                </div>
+                <div class="px-5 py-4">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">Refusés</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#b70f1e]">{{ $indicateurs['refusees'] }}</p>
+                </div>
+            @else
+                <div class="border-b border-[#e8e2f5] px-5 py-4 lg:border-b-0 lg:border-r">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">Nouvelles</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#d91426]">{{ $indicateurs['nouvelles'] }}</p>
+                </div>
+                <div class="border-b border-[#e8e2f5] px-5 py-4 sm:border-b-0 sm:border-r">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">En traitement</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#185875]">{{ $indicateurs['en_traitement'] }}</p>
+                </div>
+                <div class="px-5 py-4">
+                    <p class="text-xs font-bold uppercase text-[#6d6684]">Au jury</p>
+                    <p class="mt-1 text-2xl font-extrabold text-[#4b3788]">{{ $indicateurs['jury'] }}</p>
+                </div>
+            @endif
         </section>
 
         <section class="border border-[#e8e2f5] bg-white p-5">
