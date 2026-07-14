@@ -28,7 +28,7 @@
             </div>
 
             <a href="{{ route('admission.accueil') }}" class="mt-5 text-sm font-semibold text-[#6d6684] underline decoration-[#d8d0ea] underline-offset-4 hover:text-[#27185f]">
-                Retour a l'espace admission
+                Retour à l'espace admission
             </a>
         </div>
     </body>
