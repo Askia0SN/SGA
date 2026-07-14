@@ -17,7 +17,7 @@
         <header class="border-b border-red-100/50 bg-white/90 backdrop-blur-xl">
             <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
                 <a href="{{ route('programmes.index') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/epf-logo.png') }}" alt="EPF Africa Logo" class="h-14 w-14 object-contain">
+                    <img src="{{ asset('images/logo-sga.png') }}" alt="EPF Africa Logo" class="h-14 w-14 object-contain">
                     <div>
                         <p class="text-lg font-bold text-purple-900">EPF Africa</p>
                         <p class="text-xs text-red-600 font-semibold">Engineering School</p>
