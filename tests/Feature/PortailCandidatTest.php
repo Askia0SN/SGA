@@ -91,6 +91,20 @@ class PortailCandidatTest extends TestCase
             ->assertDontSee('Master Energie');
     }
 
+    public function test_routes_exposing_tracking_codes_are_rate_limited(): void
+    {
+        $routes = app('router')->getRoutes();
+
+        $this->assertContains(
+            'throttle:10,1',
+            $routes->getByName('candidatures.suivi.rechercher')->gatherMiddleware(),
+        );
+        $this->assertContains(
+            'throttle:20,1',
+            $routes->getByName('candidature.confirmation')->gatherMiddleware(),
+        );
+    }
+
     private function donneesProgramme(string $nom, bool $actif): array
     {
         return [

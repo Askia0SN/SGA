@@ -7,9 +7,9 @@ use App\Models\Programme;
 use App\Rules\AgeMinimum;
 use App\Services\CandidatureSubmissionService;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
@@ -47,8 +47,10 @@ class FormulaireCandidature extends Component
     public array $documents = [];
 
     /** @var array<int, array{chemin: string, nom_original: string, type_mime: string, taille_octets: int}> */
+    #[Locked]
     public array $documentsPersistes = [];
 
+    #[Locked]
     public ?int $candidatureId = null;
 
     public ?string $confirmationCode = null;
@@ -86,6 +88,8 @@ class FormulaireCandidature extends Component
 
     public function sauvegarderBrouillon()
     {
+        $candidatureId = $this->identifiantBrouillonAutorise();
+
         try {
             if ($this->etape === 1) {
                 $this->validerEtapeCourante();
@@ -94,13 +98,14 @@ class FormulaireCandidature extends Component
             $candidature = app(CandidatureSubmissionService::class)->sauvegarderBrouillon(
                 $this->programme,
                 $this->donneesFormulaire(),
-                $this->candidatureId,
+                $candidatureId,
             );
 
             $this->candidatureId = $candidature->id;
             session()->put('candidature_brouillon_'.$this->programme->id, $candidature->id);
 
             session()->flash('message', 'Votre brouillon a été sauvegardé. Vous allez recevoir un email de confirmation avec votre code de suivi.');
+
             return $this->redirect(route('candidature.confirmation', $candidature->code_suivi), navigate: true);
         } catch (ValidationException $exception) {
             throw $exception;
@@ -119,6 +124,8 @@ class FormulaireCandidature extends Component
 
     public function soumettre()
     {
+        $candidatureId = $this->identifiantBrouillonAutorise();
+
         try {
             $this->persisterDocumentsEnAttente();
 
@@ -131,7 +138,7 @@ class FormulaireCandidature extends Component
                 $this->programme,
                 $this->donneesFormulaire(),
                 $this->documentsFichiersPourSoumission(),
-                $this->candidatureId,
+                $candidatureId,
             );
 
             session()->forget('candidature_brouillon_'.$this->programme->id);
@@ -149,7 +156,7 @@ class FormulaireCandidature extends Component
                 'exception' => $exception->getMessage(),
                 'trace' => $exception->getTraceAsString(),
             ]);
-            $this->addError('workflow', 'Une erreur technique est survenue lors de la soumission. Détails : '.$exception->getMessage());
+            $this->addError('workflow', 'Une erreur technique est survenue lors de la soumission. Veuillez réessayer.');
         }
     }
 
@@ -303,11 +310,6 @@ class FormulaireCandidature extends Component
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('candidats', 'email')->ignore(
-                    $this->candidatureId
-                        ? Candidature::find($this->candidatureId)?->candidat_id
-                        : null
-                ),
             ],
             'telephone' => ['nullable', 'string', 'max:30'],
             'pays' => ['required', 'string', 'max:100'],
@@ -374,5 +376,16 @@ class FormulaireCandidature extends Component
             'etablissement_origine' => $this->etablissement_origine,
             'lettre_motivation' => $this->lettre_motivation,
         ];
+    }
+
+    private function identifiantBrouillonAutorise(): ?int
+    {
+        $identifiantSession = session()->get('candidature_brouillon_'.$this->programme->id);
+
+        if ($this->candidatureId !== null && (int) $identifiantSession !== $this->candidatureId) {
+            abort(403, 'Ce brouillon n’appartient pas à cette session.');
+        }
+
+        return $identifiantSession ? (int) $identifiantSession : null;
     }
 }

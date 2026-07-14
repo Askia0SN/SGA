@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\MailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuiviCandidatureController;
 use App\Http\Controllers\UtilisateurController;
@@ -21,12 +20,15 @@ Route::get('/admission', function () {
 Route::get('/programmes', ProgrammesListe::class)->name('programmes.index');
 Route::get('/programmes/{programme}', ProgrammeDetail::class)->name('programmes.show');
 Route::get('/programmes/{programme}/candidature', FormulaireCandidature::class)->name('candidature.create');
-Route::get('/candidature/confirmation/{code}', ConfirmationCandidature::class)->name('candidature.confirmation');
+Route::get('/candidature/confirmation/{code}', ConfirmationCandidature::class)
+    ->middleware('throttle:20,1')
+    ->name('candidature.confirmation');
 
 Route::get('/suivi-candidature', [SuiviCandidatureController::class, 'index'])
     ->name('candidatures.suivi');
 
 Route::post('/suivi-candidature', [SuiviCandidatureController::class, 'rechercher'])
+    ->middleware('throttle:10,1')
     ->name('candidatures.suivi.rechercher');
 
 Route::prefix('admission')
@@ -47,7 +49,5 @@ Route::prefix('admission')
                 ->name('utilisateurs.invitation');
         });
     });
-
-Route::get('/send-mail', [MailController::class, 'sendMail'])->name('send.mail');
 
 require __DIR__.'/auth.php';
