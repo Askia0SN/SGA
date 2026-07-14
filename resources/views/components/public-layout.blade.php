@@ -13,9 +13,10 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen bg-[#f7f5fb] font-sans text-[#191339] antialiased">
-        <div class="min-h-screen">
-            <header class="border-b border-[#e8e2f5] bg-white/95 backdrop-blur">
+    <body class="min-h-screen font-sans text-[#191339] antialiased" style="background: linear-gradient(135deg, #faf7ff 0%, #f5efff 50%, #fff3f5 100%);">
+        
+        <div class="min-h-screen flex flex-col">
+            <header class="border-b border-[#e8e5f3] bg-white/95 backdrop-blur z-30">
                 <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
                     <a href="{{ route('accueil') }}" class="flex items-center gap-3">
                         <img src="{{ asset('images/logo-sga.png') }}" alt="SGA EPF" class="h-14 w-14 rounded-md object-contain">
@@ -25,7 +26,8 @@
                         </div>
                     </a>
 
-                    <nav class="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-[#eee8f7] pt-3 text-sm font-semibold sm:order-2 sm:w-auto sm:border-0 sm:pt-0">
+                    
+                    <nav class="order-2 flex flex-1 items-center justify-center gap-6 text-sm font-semibold">
                         <a href="{{ route('accueil') }}" class="whitespace-nowrap rounded-md px-3 py-2 transition {{ request()->routeIs('accueil') ? 'bg-[#eee9fb] text-[#27185f]' : 'text-[#6d6684] hover:bg-[#f4f0fb] hover:text-[#27185f]' }}">
                             Accueil
                         </a>
@@ -37,22 +39,18 @@
                         </a>
                     </nav>
 
-                    <a href="{{ route('admission.accueil') }}" class="order-2 inline-flex items-center justify-center rounded-md border border-[#d8d0ea] bg-white px-4 py-2 text-sm font-bold text-[#27185f] transition hover:border-[#27185f] hover:bg-[#f4f0fb] sm:order-3">
+
+                    <a href="{{ route('admission.accueil') }}" class="order-3 inline-flex items-center justify-center rounded-md border border-[#d8d0ea] bg-white px-4 py-2 text-sm font-bold text-[#27185f] transition hover:border-[#27185f] hover:bg-[#f4f0fb] sm:order-3">
                         Espace admission
                     </a>
                 </div>
             </header>
 
-            <main>
+            <main class="flex-1">
                 {{ $slot }}
             </main>
 
-            <footer class="border-t border-[#e8e2f5] bg-white">
-                <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-[#6d6684] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                    <p class="font-semibold text-[#27185f]">EPF Africa - Service des admissions</p>
-                    <p>Gerer, evaluer, admettre.</p>
-                </div>
-            </footer>
+            <x-footer class="mt-auto" />
         </div>
     </body>
 </html>

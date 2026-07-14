@@ -41,6 +41,8 @@ class FormulaireCandidature extends Component
 
     public string $etablissement_origine = '';
 
+    public string $lettre_motivation = '';
+
     /** @var array<int, mixed> */
     public array $documents = [];
 
@@ -74,7 +76,7 @@ class FormulaireCandidature extends Component
     public function etapeSuivante(): void
     {
         $this->validerEtapeCourante();
-        $this->etape = min(3, $this->etape + 1);
+        $this->etape = min(4, $this->etape + 1);
     }
 
     public function etapePrecedente(): void
@@ -120,7 +122,7 @@ class FormulaireCandidature extends Component
         try {
             $this->persisterDocumentsEnAttente();
 
-for ($etape = 1; $etape <= 3; $etape++) {
+            for ($etape = 1; $etape <= 4; $etape++) {
                 $this->etape = $etape;
                 $this->validerEtapeCourante();
             }
@@ -155,7 +157,7 @@ for ($etape = 1; $etape <= 3; $etape++) {
     {
         return view('livewire.public.formulaire-candidature', [
             'typesDocuments' => $this->programme->typesDocuments,
-            'progression' => (int) round($this->etape / 3 * 100),
+            'progression' => (int) round($this->etape / 4 * 100),
         ])->title('Candidature - '.$this->programme->nom);
     }
 
@@ -192,6 +194,7 @@ for ($etape = 1; $etape <= 3; $etape++) {
             1 => $this->reglesEtape1(),
             2 => $this->reglesEtape2(),
             3 => $this->reglesEtape3(),
+            4 => $this->reglesEtape4(),
             default => [],
         };
 
@@ -206,7 +209,7 @@ for ($etape = 1; $etape <= 3; $etape++) {
             throw new ValidationException($validator);
         }
 
-        if ($this->etape === 3) {
+        if ($this->etape === 4) {
             $this->validerDocumentsObligatoires();
         }
     }
@@ -331,6 +334,13 @@ for ($etape = 1; $etape <= 3; $etape++) {
      */
     private function reglesEtape3(): array
     {
+        return [
+            'lettre_motivation' => ['nullable', 'string', 'max:3000'],
+        ];
+    }
+
+    private function reglesEtape4(): array
+    {
         if ($this->programme->typesDocuments->isEmpty()) {
             return [];
         }
@@ -362,6 +372,7 @@ for ($etape = 1; $etape <= 3; $etape++) {
             'adresse' => $this->adresse,
             'derniere_formation' => $this->derniere_formation,
             'etablissement_origine' => $this->etablissement_origine,
+            'lettre_motivation' => $this->lettre_motivation,
         ];
     }
 }
