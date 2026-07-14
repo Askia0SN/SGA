@@ -79,6 +79,11 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return $this->hasMany(MessageCandidature::class);
     }
 
+    public function notificationsInternes(): HasMany
+    {
+        return $this->hasMany(NotificationInterne::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
