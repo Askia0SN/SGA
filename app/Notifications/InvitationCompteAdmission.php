@@ -31,12 +31,12 @@ class InvitationCompteAdmission extends Notification
         ]);
 
         return (new MailMessage)
-            ->subject('Invitation a l espace admission EPF')
-            ->greeting('Bonjour '.$notifiable->name.',')
-            ->line($this->invitePar.' a cree votre acces au systeme d admission EPF.')
-            ->line('Utilisez le bouton ci-dessous pour definir votre mot de passe et activer votre acces.')
-            ->action('Definir mon mot de passe', $url)
-            ->line('Ce lien expire dans '.config('auth.passwords.users.expire').' minutes.')
-            ->line('Si vous ne reconnaissez pas cette invitation, ignorez cet email.');
+            ->subject('Invitation à l’espace admission EPF')
+            ->view('emails.invitation-compte-admission', [
+                'nom' => $notifiable->name,
+                'invitePar' => $this->invitePar,
+                'url' => $url,
+                'expiration' => config('auth.passwords.users.expire'),
+            ]);
     }
 }

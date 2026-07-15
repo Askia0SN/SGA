@@ -108,7 +108,7 @@ class EmailService
 
         try {
             Mail::to($candidature->candidat->email)->send(
-                new CandidatureSoumiseMail($candidature, $objet, $contenu, $signature),
+                new CandidatureSoumiseMail($candidature, $objet, $contenu, $signature, $evenement),
             );
 
             $log->update([
@@ -135,27 +135,27 @@ class EmailService
         return match ($evenement) {
             'candidature_brouillon' => [
                 'objet' => 'Brouillon de candidature enregistré - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon pour {programme} a été enregistré. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon de candidature au programme <strong>{programme}</strong> a bien été enregistré. Vous pourrez reprendre votre saisie ultérieurement.</p>',
             ],
             'complement_demande' => [
                 'objet' => 'Complément de dossier requis - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Un complément est nécessaire pour poursuivre votre dossier : {message}</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Un complément est nécessaire pour poursuivre le traitement de votre dossier.</p><p><strong>Élément demandé :</strong> {message}</p>',
             ],
             'candidature_transmise_jury' => [
                 'objet' => 'Mise à jour de votre candidature - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre dossier pour {programme} est complet et a été transmis au jury.</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre dossier pour le programme <strong>{programme}</strong> est complet et a été transmis au jury pour évaluation.</p>',
             ],
             'candidature_admise' => [
                 'objet' => 'Admission - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Nous avons le plaisir de vous annoncer votre admission au programme {programme}.</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Nous avons le plaisir de vous annoncer votre admission au programme <strong>{programme}</strong>. Félicitations pour cette réussite !</p><p>{message}</p>',
             ],
             'candidature_refusee' => [
                 'objet' => 'Résultat de candidature - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Après étude, votre candidature au programme {programme} n’a pas été retenue.</p><p>{message}</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Après étude de votre dossier, votre candidature au programme <strong>{programme}</strong> n’a pas été retenue.</p><p>{message}</p>',
             ],
             default => [
                 'objet' => 'Confirmation de candidature - EPF Africa',
-                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme {programme} a bien été reçue. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+                'contenu' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme <strong>{programme}</strong> a bien été reçue. Notre service admission va maintenant procéder à l’étude de votre dossier.</p>',
             ],
         };
     }
