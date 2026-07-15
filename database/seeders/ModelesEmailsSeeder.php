@@ -18,32 +18,32 @@ class ModelesEmailsSeeder extends Seeder
             [
                 'evenement' => 'candidature_soumise',
                 'objet' => 'Confirmation de candidature - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme {programme} a bien ete recue. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre candidature au programme <strong>{programme}</strong> a bien été reçue. Notre service admission va maintenant procéder à l’étude de votre dossier.</p>',
             ],
             [
                 'evenement' => 'candidature_brouillon',
                 'objet' => 'Brouillon enregistré - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon de candidature au programme {programme} a bien ete enregistre. Votre code de suivi est <strong>{code_suivi}</strong>.</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre brouillon de candidature au programme <strong>{programme}</strong> a bien été enregistré. Vous pourrez reprendre votre saisie ultérieurement.</p>',
             ],
             [
                 'evenement' => 'complement_demande',
                 'objet' => 'Complement de dossier requis - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Un complement est necessaire pour poursuivre le traitement de votre dossier : {message}.</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Un complément est nécessaire pour poursuivre le traitement de votre dossier.</p><p><strong>Élément demandé :</strong> {message}</p>',
             ],
             [
                 'evenement' => 'candidature_transmise_jury',
                 'objet' => 'Mise a jour de votre candidature - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre dossier pour le programme {programme} est complet et a ete transmis au jury.</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Votre dossier pour le programme <strong>{programme}</strong> est complet et a été transmis au jury pour évaluation.</p>',
             ],
             [
                 'evenement' => 'candidature_admise',
                 'objet' => 'Admission - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Nous avons le plaisir de vous annoncer votre admission au programme {programme}.</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Nous avons le plaisir de vous annoncer votre admission au programme <strong>{programme}</strong>. Félicitations pour cette réussite !</p><p>{message}</p>',
             ],
             [
                 'evenement' => 'candidature_refusee',
                 'objet' => 'Resultat de candidature - EPF Africa',
-                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Apres etude de votre dossier, votre candidature au programme {programme} n a pas ete retenue.</p><p>{message}</p>',
+                'contenu_html' => '<p>Bonjour {nom_candidat},</p><p>Après étude de votre dossier, votre candidature au programme <strong>{programme}</strong> n’a pas été retenue.</p><p>{message}</p>',
             ],
         ];
 

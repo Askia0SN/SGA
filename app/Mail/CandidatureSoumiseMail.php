@@ -18,6 +18,7 @@ class CandidatureSoumiseMail extends Mailable
         public string $objetPersonnalise,
         public string $contenuHtml,
         public string $signature,
+        public string $evenement = 'candidature_soumise',
     ) {}
 
     public function envelope(): Envelope
