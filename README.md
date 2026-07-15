@@ -15,6 +15,19 @@ php artisan serve
 
 La connexion MySQL et l'envoi des emails doivent etre configures dans `.env` avant de lancer les migrations et les invitations.
 
+## Configuration MySQL et emails
+
+Copiez `.env.example` vers `.env`, puis renseignez `DB_DATABASE`, `DB_USERNAME` et `DB_PASSWORD`. Pour Gmail, utilisez un mot de passe d'application Google dans `MAIL_PASSWORD`, jamais le mot de passe principal du compte.
+
+Apres toute modification du `.env`, synchronisez la base et rechargez la configuration :
+
+```bash
+php artisan migrate --seed
+php artisan config:clear
+```
+
+Les emails de soumission, demande de complement, transmission au jury, admission et refus sont envoyes automatiquement. Chaque tentative est conservee dans la table `emails_envoyes` avec son statut.
+
 ## Initialiser le back-office
 
 Il n'existe aucune inscription publique pour le personnel. Apres `php artisan migrate --seed`, creez le premier super administrateur avec la commande interactive suivante :
@@ -49,3 +62,5 @@ Chaque route interne verifie que le compte est actif, que l'email est confirme e
 php artisan test
 npm run build
 ```
+
+Le parcours valide est : soumission candidat, prise en charge par le service admission, verification des documents, transmission au jury, puis admission, refus ou demande de complement.
