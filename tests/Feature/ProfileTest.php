@@ -18,7 +18,11 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get(route('profile.edit'));
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertSee('livewire.js?id=', false)
+            ->assertSee('Profil')
+            ->assertSee('Deconnexion');
     }
 
     public function test_profile_information_can_be_updated(): void
