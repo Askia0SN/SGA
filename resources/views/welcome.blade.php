@@ -1,84 +1,84 @@
 <x-public-layout title="Accueil candidat - SGA EPF">
-    <style>
-        @keyframes floatY {0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)}}
-        @keyframes blobMove {0%{transform:translateY(0) scale(1)}50%{transform:translateY(-18px) scale(1.05)}100%{transform:translateY(0) scale(1)}}
-        @keyframes gradientShift {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-        .animate-float{animation:floatY 6s ease-in-out infinite}
-        .animate-blob{animation:blobMove 8s ease-in-out infinite}
-        .gradient-animate{background-size:200% 200%; animation:gradientShift 10s ease infinite}
-        .hero-deco{pointer-events:none}
-    </style>
-
-    <section class="relative overflow-hidden bg-transparent">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(217,20,38,0.12),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(39,24,95,0.12),_transparent_30%)]"></div>
-        <div class="absolute inset-0 animated-gradient-bg opacity-20 pointer-events-none mix-blend-overlay"></div>
-
-        <div class="relative mx-auto flex max-w-7xl items-center justify-between gap-16 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <div class="w-1/2 max-w-2xl">
-                <div class="inline-flex items-center rounded-full border border-[#f1dfe1] bg-[#fff5f6] px-3 py-1 text-sm font-semibold text-[#d91426] shadow-sm">
-                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-[#d91426]"></span>
+    <section class="border-b border-[#e8e2f5] bg-white">
+        <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:gap-16 lg:px-8 lg:py-16">
+            <div class="min-w-0 max-w-3xl">
+                <div class="inline-flex items-center gap-2 rounded-md border border-[#f0cbd0] bg-[#fff7f8] px-3 py-2 text-xs font-extrabold uppercase text-[#b70f1e]">
+                    <span class="h-2 w-2 rounded-full bg-[#d91426]"></span>
                     Admissions EPF Africa
                 </div>
 
-                <h1 class="mt-6 text-3xl font-black leading-tight text-[#191339] sm:text-4xl lg:text-5xl gradient-text fade-up delay-1">
-                    Bienvenue à EPF Africa, votre parcours vers l'excellence commence ici.
+                <h1 class="mt-6 text-4xl font-black leading-[1.08] text-[#191339] sm:text-5xl lg:text-[3.5rem]">
+                    Votre avenir d’ingénieur
+                    <span class="block text-[#d91426]">commence ici.</span>
                 </h1>
 
-                <p class="mt-5 text-base leading-7 text-[#5a5570] fade-up delay-2">
-                    Admission simple, dossier facile, suivi clair.
+                <p class="mt-6 max-w-2xl text-base leading-7 text-[#5f5875] sm:text-lg sm:leading-8">
+                    Découvrez les programmes EPF Africa, déposez votre dossier en ligne et suivez chaque étape de votre candidature depuis un espace simple et sécurisé.
                 </p>
 
-                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <a href="{{ route('programmes.index') }}" style="background: linear-gradient(90deg, #6f22de 0%, #d91426 50%, #191339 100%); color: white;" class="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-bold shadow-lg shadow-[#d91426]/20 transition duration-200 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#d91426] focus:ring-offset-2">
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <a href="{{ route('programmes.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-md bg-[#d91426] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#d91426]/20 transition hover:bg-[#b70f1e] focus:outline-none focus:ring-2 focus:ring-[#d91426] focus:ring-offset-2">
                         Consulter les programmes
                     </a>
-                    <a href="{{ route('candidatures.suivi') }}" class="inline-flex items-center justify-center rounded-full border border-[#d8d0ea] bg-white px-6 py-3 text-sm font-bold text-[#27185f] shadow-sm transition transform hover:-translate-y-0.5 hover:border-[#27185f] hover:bg-[#f7f5fb] focus:outline-none focus:ring-2 focus:ring-[#27185f] focus:ring-offset-2">
+                    <a href="{{ route('candidatures.suivi') }}" class="inline-flex min-h-12 items-center justify-center rounded-md border border-[#cfc7e2] bg-white px-6 py-3 text-sm font-extrabold text-[#27185f] transition hover:border-[#27185f] hover:bg-[#f7f5fb] focus:outline-none focus:ring-2 focus:ring-[#27185f] focus:ring-offset-2">
                         Suivre ma candidature
                     </a>
                 </div>
 
-                
+                <dl class="mt-10 hidden max-w-2xl grid-cols-3 border-y border-[#e8e2f5] py-4 sm:grid">
+                    <div class="pr-3">
+                        <dt class="text-xs font-bold text-[#817a94]">Dépôt</dt>
+                        <dd class="mt-1 text-sm font-extrabold text-[#27185f]">100 % en ligne</dd>
+                    </div>
+                    <div class="border-x border-[#e8e2f5] px-3 sm:px-5">
+                        <dt class="text-xs font-bold text-[#817a94]">Suivi</dt>
+                        <dd class="mt-1 text-sm font-extrabold text-[#27185f]">Code personnel</dd>
+                    </div>
+                    <div class="pl-3 sm:pl-5">
+                        <dt class="text-xs font-bold text-[#817a94]">Décision</dt>
+                        <dd class="mt-1 text-sm font-extrabold text-[#27185f]">Notification email</dd>
+                    </div>
+                </dl>
             </div>
 
-                <div class="relative flex w-1/2 items-center justify-start">
-                    <div class="hero-deco absolute -left-8 -top-8 hidden md:block h-36 w-36 rounded-full bg-gradient-to-br from-[#6f22de]/30 to-[#d91426]/30 blur-3xl lg:block animate-blob"></div>
-                    <div class="hero-deco absolute -right-6 bottom-6 hidden md:block h-28 w-28 rounded-full bg-[#6f22de]/20 blur-2xl lg:block animate-float"></div>
-                    <div class="hero-deco absolute left-1/2 top-[-2rem] hidden md:block h-40 w-60 translate-x-[-50%] rounded-[2rem] bg-gradient-to-r from-[#6f22de]/10 via-[#d91426]/10 to-[#191339]/8 blur-3xl lg:block gradient-animate"></div>
-
-                    <img src="{{ asset('images/logo-sga.png') }}" alt="Logo accueil" class="relative z-10 h-56 w-auto rounded-[1.5rem] border border-white/10 bg-white/90 p-3 shadow-[0_20px_60px_-18px_rgba(25,19,57,0.18)] object-contain sm:h-80 lg:h-72 lg:-ml-12 xl:-ml-24" />
-                </div>
-        </div>
-    </section>
-
-    <section class="border-y border-[#e8e2f5] bg-white/60 backdrop-blur-sm">
-        <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-            <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div class="max-w-2xl">
-                    <p class="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d91426]">Votre parcours</p>
-                    <h2 class="mt-2 text-3xl font-black text-[#191339] sm:text-4xl">Une candidature fluide, claire et rassurante</h2>
-                </div>
-                
-            </div>
-
-            <div class="mt-8 grid gap-6 lg:grid-cols-3">
-                <div class="rounded-2xl border border-[#e8e2f5] bg-white p-6 shadow-sm">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#fef2f3] text-2xl font-black text-[#d91426]">01</div>
-                    <h3 class="mt-5 text-xl font-extrabold text-[#191339]">Choisir un programme</h3>
-                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Explorez les formations disponibles et sélectionnez celle qui correspond le mieux à votre projet professionnel.</p>
-                </div>
-                <div class="rounded-2xl border border-[#e8e2f5] bg-white p-6 shadow-sm">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f6f2ff] text-2xl font-black text-[#27185f]">02</div>
-                    <h3 class="mt-5 text-xl font-extrabold text-[#191339]">Soumettre votre dossier</h3>
-                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Renseignez vos informations, ajoutez les documents nécessaires et envoyez votre candidature en quelques clics.</p>
-                </div>
-                <div class="rounded-2xl border border-[#e8e2f5] bg-white p-6 shadow-sm">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f7f5fb] text-2xl font-black text-[#191339]">03</div>
-                    <h3 class="mt-5 text-xl font-extrabold text-[#191339]">Suivre la décision</h3>
-                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Utilisez votre code de suivi pour consulter l’avancement de votre dossier et rester informé à chaque étape.</p>
+            <div class="relative mx-auto hidden w-full max-w-[390px] lg:mx-0 lg:block lg:justify-self-end">
+                <div class="absolute -bottom-3 -left-3 h-full w-full rounded-lg bg-[#27185f]" aria-hidden="true"></div>
+                <figure class="relative aspect-square overflow-hidden rounded-lg border border-[#e8e2f5] bg-white p-6 shadow-[0_24px_50px_-28px_rgba(25,19,57,0.45)] sm:p-8">
+                    <img src="{{ asset('images/logo-sga.png') }}" alt="Système d’admission EPF" class="h-full w-full object-contain">
+                </figure>
+                <div class="relative ml-auto mt-6 w-fit border-l-4 border-[#d91426] bg-[#fff7f8] px-4 py-3 text-right">
+                    <p class="text-xs font-extrabold uppercase text-[#d91426]">Rentrée 2026–2027</p>
+                    <p class="mt-1 text-sm font-bold text-[#27185f]">Construisez votre projet avec EPF Africa</p>
                 </div>
             </div>
         </div>
     </section>
 
-    
+    <section class="bg-[#f7f5fb]">
+        <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+            <div class="max-w-3xl">
+                <p class="text-xs font-extrabold uppercase text-[#d91426]">Votre parcours</p>
+                <h2 class="mt-3 text-3xl font-black leading-tight text-[#191339] sm:text-4xl">Candidatez en trois étapes</h2>
+                <p class="mt-4 text-base leading-7 text-[#6d6684]">Un parcours conçu pour vous permettre de savoir où en est votre dossier à tout moment.</p>
+            </div>
+
+            <ol class="mt-10 grid border-t border-[#d8d0ea] md:grid-cols-3">
+                <li class="relative border-b border-[#d8d0ea] py-7 md:border-b-0 md:border-r md:pr-8">
+                    <span class="absolute -top-4 left-0 flex h-8 w-8 items-center justify-center rounded-md bg-[#d91426] text-xs font-black text-white">01</span>
+                    <h3 class="mt-2 text-lg font-extrabold text-[#191339]">Choisissez votre programme</h3>
+                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Comparez les formations ouvertes et sélectionnez celle qui correspond à votre projet.</p>
+                </li>
+                <li class="relative border-b border-[#d8d0ea] py-7 md:border-b-0 md:border-r md:px-8">
+                    <span class="absolute -top-4 left-0 flex h-8 w-8 items-center justify-center rounded-md bg-[#6f22de] text-xs font-black text-white md:left-8">02</span>
+                    <h3 class="mt-2 text-lg font-extrabold text-[#191339]">Déposez votre dossier</h3>
+                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Renseignez vos informations et transmettez les documents demandés en toute sécurité.</p>
+                </li>
+                <li class="relative py-7 md:pl-8">
+                    <span class="absolute -top-4 left-0 flex h-8 w-8 items-center justify-center rounded-md bg-[#27185f] text-xs font-black text-white md:left-8">03</span>
+                    <h3 class="mt-2 text-lg font-extrabold text-[#191339]">Suivez votre candidature</h3>
+                    <p class="mt-3 text-sm leading-7 text-[#6d6684]">Consultez l’avancement avec votre code de suivi et recevez les décisions par email.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
 </x-public-layout>

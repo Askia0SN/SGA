@@ -13,13 +13,13 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen font-sans text-[#191339] antialiased" style="background: linear-gradient(135deg, #faf7ff 0%, #f5efff 50%, #fff3f5 100%);">
+    <body class="min-h-screen bg-[#faf9fc] font-sans text-[#191339] antialiased">
         
         <div class="min-h-screen flex flex-col">
-            <header class="border-b border-[#e8e5f3] bg-white/95 backdrop-blur z-30">
-                <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <header class="relative z-30 border-b border-[#e8e5f3] bg-white">
+                <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
                     <a href="{{ route('accueil') }}" class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo-sga.png') }}" alt="SGA EPF" class="h-14 w-14 rounded-md object-contain">
+                        <img src="{{ asset('images/logo-sga.png') }}" alt="SGA EPF" class="h-12 w-12 rounded-md object-contain">
                         <div>
                             <p class="text-sm font-extrabold uppercase text-[#27185f]">EPF Africa</p>
                             <p class="text-xs font-semibold text-[#d91426]">Admissions</p>
@@ -27,7 +27,7 @@
                     </a>
 
                     
-                    <nav class="order-2 flex flex-1 items-center justify-center gap-6 text-sm font-semibold">
+                    <nav class="order-3 flex w-full items-center gap-1 overflow-x-auto border-t border-[#eee8f7] pt-3 text-sm font-semibold lg:order-2 lg:w-auto lg:border-0 lg:pt-0">
                         <a href="{{ route('accueil') }}" class="whitespace-nowrap rounded-md px-3 py-2 transition {{ request()->routeIs('accueil') ? 'bg-[#eee9fb] text-[#27185f]' : 'text-[#6d6684] hover:bg-[#f4f0fb] hover:text-[#27185f]' }}">
                             Accueil
                         </a>
@@ -40,7 +40,7 @@
                     </nav>
 
 
-                    <a href="{{ route('admission.accueil') }}" class="order-3 inline-flex items-center justify-center rounded-md border border-[#d8d0ea] bg-white px-4 py-2 text-sm font-bold text-[#27185f] transition hover:border-[#27185f] hover:bg-[#f4f0fb] sm:order-3">
+                    <a href="{{ route('admission.accueil') }}" class="order-2 inline-flex items-center justify-center rounded-md border border-[#d8d0ea] bg-white px-3 py-2 text-xs font-bold text-[#27185f] transition hover:border-[#27185f] hover:bg-[#f4f0fb] sm:px-4 sm:text-sm lg:order-3">
                         Espace admission
                     </a>
                 </div>
